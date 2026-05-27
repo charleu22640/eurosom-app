@@ -1,0 +1,1937 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Eurosom — Prise de Mesures</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#c0392b;--red-dark:#96281b;--red-light:#e74c3c;--red-bg:#fdf2f1;
+  --gray:#4a4a4a;--gray-light:#f2f2f2;--gray-mid:#c8c8c8;--gray-dark:#2c2c2c;
+  --white:#ffffff;--border:#ddd;
+  --font-head:'Barlow Condensed',sans-serif;
+  --font-body:'Barlow',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-body);font-size:15px;background:#ebebeb;color:var(--gray-dark);-webkit-text-size-adjust:100%}
+.app{max-width:560px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+
+/* HEADER */
+.header{background:var(--red-dark);padding:0;position:sticky;top:0;z-index:40;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
+.header-inner{display:flex;align-items:center;gap:12px;padding:10px 16px}
+.header-logo{font-family:var(--font-head);font-size:22px;font-weight:900;color:#fff;letter-spacing:1px;line-height:1}
+.header-logo span{color:rgba(255,255,255,0.5);font-weight:400;font-size:14px;display:block;letter-spacing:2px;text-transform:uppercase}
+.header-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.btn-hist{background:rgba(255,255,255,0.15);border:none;color:#fff;font-family:var(--font-head);font-size:13px;font-weight:600;letter-spacing:1px;padding:6px 12px;border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:5px}
+.btn-hist:active{background:rgba(255,255,255,0.25)}
+.hist-count{background:var(--red-light);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:700}
+
+/* MENU PRODUITS */
+.menu-page{padding:16px;display:flex;flex-direction:column;gap:10px}
+.menu-title{font-family:var(--font-head);font-size:28px;font-weight:900;color:var(--red-dark);letter-spacing:1px;margin-bottom:4px;text-transform:uppercase}
+.menu-sub{font-size:13px;color:#888;margin-bottom:8px}
+.prod-card{background:var(--white);border-radius:10px;border:1.5px solid var(--border);padding:0;cursor:pointer;overflow:hidden;display:flex;align-items:stretch;transition:border-color 0.15s;-webkit-tap-highlight-color:transparent}
+.prod-card:active{background:#f8f8f8}
+.prod-card-accent{width:6px;background:var(--gray-mid);flex-shrink:0}
+.prod-card.bvr .prod-card-accent{background:var(--red)}
+.prod-card.somogliss .prod-card-accent{background:#2980b9}
+.prod-card.somroller .prod-card-accent{background:#27ae60}
+.prod-card.classique .prod-card-accent{background:#8e44ad}
+.prod-card-body{padding:14px 16px;flex:1}
+.prod-card-name{font-family:var(--font-head);font-size:20px;font-weight:700;letter-spacing:0.5px;color:var(--gray-dark)}
+.prod-card-desc{font-size:12px;color:#888;margin-top:2px}
+.prod-card-arrow{display:flex;align-items:center;padding:0 14px;color:var(--gray-mid);font-size:22px}
+
+/* TABS */
+.tabs{display:flex;background:var(--gray-dark);border-bottom:3px solid var(--red)}
+.tab{flex:1;padding:10px 6px;text-align:center;font-size:12px;cursor:pointer;border:none;background:none;color:rgba(255,255,255,0.5);font-family:var(--font-head);font-weight:600;letter-spacing:1px;text-transform:uppercase;border-bottom:3px solid transparent;margin-bottom:-3px}
+.tab.active{color:#fff;border-bottom:3px solid var(--red)}
+
+/* CONTENT */
+.content{flex:1;padding:12px 14px 90px}
+.page{display:none}.page.active{display:block}
+
+/* BREADCRUMB */
+.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:12px;color:#888}
+.breadcrumb-btn{background:none;border:none;color:var(--red);cursor:pointer;font-size:12px;font-family:var(--font-body);padding:0;display:flex;align-items:center;gap:4px}
+.breadcrumb-sep{color:#ccc}
+.breadcrumb-current{font-weight:600;color:var(--gray-dark)}
+
+/* FORMULAIRE */
+.form-header{background:var(--red);border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.form-header-name{font-family:var(--font-head);font-size:22px;font-weight:900;color:#fff;letter-spacing:1px;text-transform:uppercase}
+.form-header-sub{font-size:11px;color:rgba(255,255,255,0.7);margin-top:1px}
+
+.step{background:var(--white);border-radius:10px;border:1px solid var(--border);padding:14px;margin-bottom:12px}
+.step-title{font-family:var(--font-head);font-size:15px;font-weight:700;color:var(--red-dark);margin-bottom:12px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:0.5px}
+.step-num{background:var(--red);color:#fff;border-radius:3px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+
+.field{margin-bottom:12px}.field:last-child{margin-bottom:0}
+.field label{display:block;font-size:11px;color:#888;margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+.field input[type=text],.field input[type=number],.field select,.field textarea{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:6px;font-size:14px;background:#fff;color:var(--gray-dark);font-family:var(--font-body);-webkit-appearance:none}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(192,57,43,0.1)}
+.field textarea{resize:vertical;min-height:60px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+
+.rg{display:flex;gap:6px;flex-wrap:wrap}
+.ro{position:relative}
+.ro input{position:absolute;opacity:0;width:0;height:0}
+.ro label{display:inline-flex;align-items:center;cursor:pointer;font-size:13px;padding:7px 12px;border:1px solid var(--border);border-radius:6px;background:var(--gray-light);color:#555;font-family:var(--font-body);min-height:36px;white-space:nowrap;font-weight:500}
+.ro input:checked+label{border-color:var(--red);background:var(--red-bg);color:var(--red-dark);font-weight:600}
+
+.chk-group{display:flex;flex-direction:column;gap:4px}
+.chk{display:flex;align-items:center;gap:10px;font-size:14px;padding:8px 6px;border-radius:6px;cursor:pointer}
+.chk input[type=checkbox]{width:20px;height:20px;cursor:pointer;accent-color:var(--red);flex-shrink:0}
+
+.meta-card{background:var(--white);border-radius:10px;border:1px solid var(--border);padding:14px;margin-bottom:12px}
+.section-label{font-family:var(--font-head);font-size:12px;font-weight:700;color:#aaa;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+
+/* BARRE ACTIONS */
+.actions{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:560px;background:var(--gray-dark);padding:9px 12px;display:flex;gap:7px;z-index:30}
+.btn{flex:1;padding:10px 4px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;border:none;background:rgba(255,255,255,0.1);color:#fff;display:flex;align-items:center;justify-content:center;gap:5px;font-family:var(--font-head);letter-spacing:0.5px;text-transform:uppercase;min-height:44px;-webkit-tap-highlight-color:transparent}
+.btn:active{transform:scale(0.96)}
+.btn-red{background:var(--red);color:#fff}
+.btn-outline{background:transparent;border:1px solid rgba(255,255,255,0.3);color:rgba(255,255,255,0.8)}
+
+/* APERÇU */
+.apercu-hint{font-size:12px;color:#888;text-align:center;margin-bottom:10px;font-style:italic}
+.apercu-wrap{background:#e0e0e0;padding:10px;border-radius:8px;overflow-x:auto}
+.xl{width:100%;border-collapse:collapse;font-family:Arial,sans-serif;background:#fff;font-size:8.5px;min-width:460px}
+.xl td{border:0.5px solid #bbb;padding:2px 4px;vertical-align:middle}
+.xl .th{font-size:13px;font-weight:700;text-align:center;padding:6px;border:1.5px solid #555;background:#fff}
+.xl .sub{font-size:7px;text-align:right;padding:2px 4px;border:0.5px solid #ddd}
+.xl .info{font-weight:700;font-size:8.5px}
+.xl .etape{font-weight:700;font-size:10px;padding:4px 5px;background:#e8e8e8;border:1px solid #aaa}
+.xl .lbl{font-weight:700;font-size:8.5px;text-align:center;background:#f5f5f5}
+.xl .val{font-size:8.5px}
+.xl .vhl{font-size:9px;font-weight:700;background:#fff8dc}
+.xl .ok{color:#1a7a1a;font-weight:700}
+.xl .no{color:#ccc}
+.xl .prod-sel{background:#c6efce;color:#276221;font-weight:700;font-size:9px;text-align:right;padding:3px 6px}
+.xl .prod-no{font-size:9px;text-align:right;padding:3px 6px;color:#555}
+.xl .cmt{background:#fffde7;font-size:8px;vertical-align:top;padding:4px}
+
+/* HISTORIQUE */
+.history-item{background:var(--white);border-radius:10px;border:1px solid var(--border);padding:13px 15px;margin-bottom:10px;cursor:pointer;-webkit-tap-highlight-color:rgba(0,0,0,0.04)}
+.history-item:active{background:#f8f8f8}
+.hi-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.hi-ref{font-weight:700;font-size:14px}
+.badge{font-size:11px;padding:3px 9px;border-radius:3px;font-weight:700;color:#fff}
+.badge.bvr{background:var(--red)}
+.badge.somogliss{background:#2980b9}
+.badge.somroller{background:#27ae60}
+.badge.classique{background:#8e44ad}
+.hi-meta{font-size:12px;color:#888;display:flex;gap:10px;flex-wrap:wrap}
+.empty{text-align:center;padding:50px 20px;color:#bbb}
+.empty-icon{font-size:46px;margin-bottom:12px}
+
+/* TOAST */
+.toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%);background:var(--gray-dark);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:200;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+
+/* OVERLAY */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100;overflow-y:auto;padding:16px}
+.overlay.open{display:block}
+.overlay-card{background:var(--white);border-radius:12px;padding:18px;max-width:530px;margin:0 auto 16px}
+.overlay-card h2{font-family:var(--font-head);font-size:18px;font-weight:700;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;text-transform:uppercase;letter-spacing:0.5px}
+.close-btn{background:none;border:none;cursor:pointer;color:#aaa;font-size:24px;padding:0;line-height:1}
+.dr{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-bottom:1px solid #f0f0f0}
+.dr:last-child{border-bottom:none}
+.dl{color:#aaa;flex-shrink:0;margin-right:10px;font-size:12px;text-transform:uppercase;letter-spacing:0.5px}
+.dv{font-weight:600;text-align:right}
+.ov-actions{display:flex;gap:8px;margin-top:14px}
+.ov-btn{flex:1;padding:10px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:var(--font-head);letter-spacing:0.5px;text-transform:uppercase}
+.ov-btn-red{background:var(--red);color:#fff}
+.ov-btn-gray{background:var(--gray-light);color:var(--gray-dark);border:1px solid var(--border)}
+
+
+/* ACCORDION PRÉPARATION CLIENT */
+.acc-section{border:1px solid #f0d0b0;border-radius:8px;margin-bottom:8px;overflow:hidden}
+.acc-header{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:#fff8f2;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.acc-header:active{background:#fdecd8}
+.acc-title{font-family:var(--font-head);font-size:14px;font-weight:700;color:#d35400;letter-spacing:.3px;display:flex;align-items:center;gap:8px}
+.acc-count{font-size:11px;background:#e67e22;color:#fff;border-radius:10px;padding:1px 7px;font-family:var(--font-body);font-weight:700;display:none}
+.acc-count.visible{display:inline}
+.acc-arrow{color:#e67e22;font-size:18px;transition:transform .2s;font-weight:700;line-height:1}
+.acc-arrow.open{transform:rotate(90deg)}
+.acc-body{display:none;background:#fff}
+.acc-body.open{display:block}
+.acc-task{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-bottom:1px solid #faf0e8;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.acc-task:last-child{border-bottom:none}
+.acc-task:active{background:#fdf6f0}
+.acc-task input[type=checkbox]{width:20px;height:20px;cursor:pointer;accent-color:#e67e22;flex-shrink:0;margin-top:2px;pointer-events:none}
+.acc-task-text{flex:1}
+.acc-task-label{font-size:13px;font-weight:600;color:var(--gray-dark);line-height:1.3}
+.acc-task-desc{font-size:11px;color:#bbb;margin-top:2px;line-height:1.4}
+.acc-task.checked .acc-task-label{color:#e67e22}
+.acc-task.checked .acc-task-desc{color:#e8a87c}
+
+/* PHOTO + DESSIN */
+.photo-draw-zone{border:1.5px dashed var(--border);border-radius:8px;overflow:hidden;background:#fafafa;min-height:80px;position:relative}
+.photo-upload-btn{padding:14px 18px;border:none;background:none;cursor:pointer;text-align:center;font-size:13px;color:#888;font-family:var(--font-body);display:inline-block}
+.photo-upload-btn:active{color:#e67e22}
+.sketch-canvas{display:block;touch-action:none;cursor:crosshair;width:100%}
+.sketch-tools{display:flex;gap:6px;padding:8px;background:var(--gray-light);border-top:1px solid var(--border);flex-wrap:wrap;align-items:center}
+.sketch-tool-btn{padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font-body)}
+.sketch-tool-btn.active{background:var(--red);color:#fff;border-color:var(--red)}
+.sketch-tool-btn:active{transform:scale(0.95)}
+.color-dot{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;flex-shrink:0}
+.color-dot.active{border-color:var(--gray-dark);box-shadow:0 0 0 1px var(--gray-dark)}
+.size-btn{width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.size-btn.active{background:var(--gray-dark);color:#fff}
+
+/* COMMUN */
+.task-custom{display:flex;gap:8px;margin-top:4px;align-items:center;padding:8px 14px;background:#fafafa;border-top:1px solid #faf0e8}
+.task-custom input[type=text]{flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font-body)}
+.task-add-btn{padding:8px 12px;background:#e67e22;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:var(--font-body)}
+.task-add-btn:active{transform:scale(0.96)}
+.task-delete{background:none;border:none;color:#ddd;font-size:18px;cursor:pointer;padding:0 4px;line-height:1}
+.task-delete:active{color:var(--red)}
+.chantier-note{background:#fff8f0;border:1px solid #f0d0b0;border-radius:8px;padding:10px 12px;font-size:12px;color:#a05000;line-height:1.5;margin-bottom:8px}
+.prep-meta{background:#fdf8f5;border-radius:8px;padding:10px;margin-bottom:12px;border:1px solid #f0d0b0}
+.btn-orange{background:#e67e22;color:#fff;border-color:#e67e22}
+
+@media print{
+  .header,.tabs,.actions,.toast,.overlay,.apercu-hint,.breadcrumb,.form-header{display:none!important}
+  body{background:#fff}
+  .app{max-width:100%}
+  .content{padding:0}
+  #page-form,#page-history{display:none!important}
+  #page-apercu{display:block!important}
+  .apercu-wrap{background:#fff;padding:0;border-radius:0;overflow:visible}
+  @page{margin:8mm;size:A4 portrait}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-inner">
+      <div class="header-logo">EUROSOM<span>Prise de mesures</span></div>
+      <div class="header-right">
+        <button class="btn-hist" onclick="showHistory()">&#128337; <span id="hist-badge" class="hist-count">0</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE MENU -->
+  <div id="page-menu" style="display:block">
+    <div class="menu-page">
+      <div class="menu-title">Choisir un produit</div>
+      <div class="menu-sub">Sélectionnez la feuille de mesures correspondante</div>
+
+      <div class="prod-card bvr" onclick="selectProduit('bvr')">
+        <div class="prod-card-accent"></div>
+        <div class="prod-card-body">
+          <div class="prod-card-name">BVR</div>
+          <div class="prod-card-desc">Rideau à enroulement vertical — BVR, R4F, RST</div>
+        </div>
+        <div class="prod-card-arrow">›</div>
+      </div>
+
+      <div class="prod-card somogliss" onclick="selectProduit('somogliss')">
+        <div class="prod-card-accent"></div>
+        <div class="prod-card-body">
+          <div class="prod-card-name">SOMOGLISS</div>
+          <div class="prod-card-desc">Rideau coulissant — Pose Eurosom</div>
+        </div>
+        <div class="prod-card-arrow">›</div>
+      </div>
+
+      <div class="prod-card somroller" onclick="selectProduit('somroller')">
+        <div class="prod-card-accent"></div>
+        <div class="prod-card-body">
+          <div class="prod-card-name">SOMROLLER</div>
+          <div class="prod-card-desc">Rideau enrouleur — 1T, 2T, Accès DT, 2T89</div>
+        </div>
+        <div class="prod-card-arrow">›</div>
+      </div>
+
+      <div class="prod-card classique" onclick="selectProduit('classique')">
+        <div class="prod-card-accent"></div>
+        <div class="prod-card-body">
+          <div class="prod-card-name">FAMILLE CLASSIQUE</div>
+          <div class="prod-card-desc">CL+, Vertical, CL+ 2T</div>
+        </div>
+        <div class="prod-card-arrow">›</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE FORMULAIRE + APERÇU -->
+  <div id="page-produit" style="display:none;flex-direction:column;flex:1">
+    <div class="tabs">
+      <button class="tab active" id="tab-form" onclick="switchTab('form')">&#9998; Formulaire</button>
+      <button class="tab" id="tab-apercu" onclick="goApercu()">&#128065; Aperçu</button>
+    </div>
+    <div class="content">
+      <div class="page active" id="page-form">
+        <div class="breadcrumb">
+          <button class="breadcrumb-btn" onclick="backToMenu()">&#8592; Produits</button>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current" id="bc-current"></span>
+        </div>
+        <div id="form-content"></div>
+      </div>
+      <div class="page" id="page-apercu">
+        <div class="breadcrumb">
+          <button class="breadcrumb-btn" onclick="backToMenu()">&#8592; Produits</button>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current" id="bc-current2"></span>
+        </div>
+        <p class="apercu-hint">Vérifiez les données — puis <strong>Imprimer</strong> pour obtenir le PDF</p>
+        <div class="apercu-wrap"><div id="xl-preview"></div></div>
+      </div>
+    </div>
+    <div class="actions" id="bar-form">
+      <button class="btn btn-outline" onclick="resetForm()">&#8635; Reset</button>
+      <button class="btn btn-outline" onclick="saveForm()">&#128190; Sauver</button>
+      <button class="btn btn-red" onclick="goApercu()">&#128065; Aperçu &amp; PDF</button>
+    </div>
+    <div class="actions" id="bar-apercu" style="display:none">
+      <button class="btn btn-outline" onclick="switchTab('form')">&#8592; Modifier</button>
+      <button class="btn btn-outline" onclick="sendPrepSMS()">&#128241; SMS client</button>
+      <button class="btn btn-outline" onclick="sendMail()">&#9993; Mail</button>
+      <button class="btn btn-red" onclick="window.print()">&#128438; Imprimer / PDF</button>
+    </div>
+  </div>
+
+  <!-- PAGE HISTORIQUE -->
+  <div id="page-history" style="display:none;flex-direction:column;flex:1">
+    <div class="tabs">
+      <button class="tab active">&#128337; Historique</button>
+    </div>
+    <div class="content">
+      <div class="breadcrumb" style="margin-bottom:12px">
+        <button class="breadcrumb-btn" onclick="backToMenu()">&#8592; Retour menu</button>
+      </div>
+      <div id="history-list"></div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- OVERLAY DETAIL -->
+<div class="overlay" id="detail-overlay">
+  <div class="overlay-card">
+    <h2>Détail <button class="close-btn" onclick="closeDetail()">&#10005;</button></h2>
+    <div id="detail-content"></div>
+    <div class="ov-actions">
+      <button class="ov-btn ov-btn-gray" onclick="sendMailFromDetail()">&#9993; Mail</button>
+      <button class="ov-btn ov-btn-red" onclick="loadToForm()">&#9998; Charger &amp; modifier</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// =========================================================
+// STATE
+// =========================================================
+var currentProduit = null;
+var histData = JSON.parse(localStorage.getItem('eurosom_history')||'[]');
+var curDetail = null;
+
+// =========================================================
+// NAVIGATION
+// =========================================================
+function showPage(name){
+  document.getElementById('page-menu').style.display = 'none';
+  document.getElementById('page-produit').style.display = 'none';
+  document.getElementById('page-history').style.display = 'none';
+  if(name==='menu') document.getElementById('page-menu').style.display='block';
+  else if(name==='produit'){document.getElementById('page-produit').style.display='flex';}
+  else if(name==='history'){document.getElementById('page-history').style.display='flex';renderHistory();}
+}
+
+function backToMenu(){showPage('menu');}
+function showHistory(){showPage('history');}
+
+function selectProduit(code){
+  currentProduit = code;
+  var labels = {bvr:'BVR',somogliss:'SOMOGLISS',somroller:'SOMROLLER',classique:'Famille Classique'};
+  document.getElementById('bc-current').textContent = labels[code];
+  document.getElementById('bc-current2').textContent = labels[code];
+  document.getElementById('form-content').innerHTML = buildForm(code);
+  photosList = [];
+  setToday();
+  initPrepTasks(code);
+  // Attacher la logique conditionnelle
+  var fc = document.getElementById('form-content');
+  if(fc) fc.addEventListener('change', onFormChange);
+  switchTab('form');
+  showPage('produit');
+}
+
+function switchTab(tab){
+  document.getElementById('tab-form').classList.toggle('active',tab==='form');
+  document.getElementById('tab-apercu').classList.toggle('active',tab==='apercu');
+  document.getElementById('page-form').classList.toggle('active',tab==='form');
+  document.getElementById('page-apercu').classList.toggle('active',tab==='apercu');
+  document.getElementById('bar-form').style.display = tab==='form'?'flex':'none';
+  document.getElementById('bar-apercu').style.display = tab==='apercu'?'flex':'none';
+}
+
+function goApercu(){
+  var d = collectForm();
+  if(!d.affaire&&!d.client){showToast('Renseignez le n° affaire ou le client');return;}
+  var preview = buildPreview(d);
+  // Ajouter la préparation client dans l'aperçu
+  var prep = collectPrepData();
+  if(prep.tasks && prep.tasks.length){
+    // Injecter dans le tableau existant avant la balise </table>
+    var prepHtml = buildPrepPreview(prep, d.client, d.metreur, d.produit_type);
+    preview = preview.replace('</table>', prepHtml+'</table>');
+  }
+  document.getElementById('xl-preview').innerHTML = preview;
+  switchTab('apercu');
+}
+
+// =========================================================
+// HELPERS
+// =========================================================
+function gv(id){var e=document.getElementById(id);return e?e.value.trim():'';}
+function gr(n){var e=document.querySelector('input[name="'+n+'"]:checked');return e?e.value:'';}
+function gc(id){var e=document.getElementById(id);return e&&e.checked;}
+function setToday(){var el=document.getElementById('f-date');if(el&&!el.value)el.value=new Date().toLocaleDateString('fr-FR');}
+
+function sel(val,opt){
+  return val===opt?'<span class="ok">&#9745; '+opt+'</span>':'<span class="no">&#9744; '+opt+'</span>';
+}
+function vhl(val,unit){
+  if(!val)return'<span style="color:#ccc">______</span>';
+  return'<strong>'+val+(unit?' '+unit:'')+'</strong>';
+}
+
+// =========================================================
+// FORMULAIRES
+// =========================================================
+function buildForm(code){
+  if(code==='bvr') return formBVR();
+  if(code==='somogliss') return formSomogliss();
+  if(code==='somroller') return formSomroller();
+  if(code==='classique') return formClassique();
+  return '';
+}
+
+function radio(name, opts, id_prefix){
+  return '<div class="rg">'+opts.map(function(o,i){
+    var id=id_prefix+'-'+i;
+    return '<div class="ro"><input type="radio" name="'+name+'" id="'+id+'" value="'+o+'"><label for="'+id+'">'+o+'</label></div>';
+  }).join('')+'</div>';
+}
+function radioKV(name, opts, id_prefix){
+  return '<div class="rg">'+opts.map(function(o,i){
+    var id=id_prefix+'-'+i;
+    return '<div class="ro"><input type="radio" name="'+name+'" id="'+id+'" value="'+o.v+'"><label for="'+id+'">'+o.l+'</label></div>';
+  }).join('')+'</div>';
+}
+
+// --- BVR ---
+function formBVR(){
+  return '<div class="form-header"><div><div class="form-header-name">BVR / R4F / RST</div><div class="form-header-sub">Rideau à enroulement vertical</div></div></div>'
+  +'<div class="meta-card">'
+  +'<div class="row2"><div class="field"><label>Date</label><input type="text" id="f-date" placeholder="jj/mm/aaaa"></div><div class="field"><label>N° affaire</label><input type="text" id="f-affaire" placeholder="ex: 2024-001"></div></div>'
+  +'<div class="field"><label>Réf. client</label><input type="text" id="f-client" placeholder="Nom ou référence client"></div>'
+  +'<div class="row2"><div class="field"><label>Métreur</label><input type="text" id="f-metreur" placeholder="Nom"></div>'
+  +'<div class="field"><label>Produit</label><select id="f-produit"><option value="">-- Choisir --</option><option value="BVR">BVR (BVR)</option><option value="R4F">Rideau 4 F (R4F)</option><option value="RST">Rideau Salle de traite (RST)</option></select></div></div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">1</span>Côté de pose</div>'
+  +'<div class="field"><label>Côté enroulement</label>'+radio('enroulement',['EXT','INT'],'enr')+'</div>'
+  +'<div class="row2"><div class="field"><label>Barre de capot</label>'+radio('barre-capot',['OUI','NON'],'bc')+'</div>'
+  +'<div class="field"><label>Capot</label>'+radio('capot',['OUI','NON'],'cap')+'</div></div>'
+  +'<div class="field"><label>Couleur capot</label><input type="text" id="f-couleur-capot" placeholder="ex: RAL 7016"></div>'
+  +'<div class="field"><label>Commentaires / schémas</label><textarea id="f-comment1" placeholder="Notes..."></textarea></div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">2</span>Largeur</div>'
+  +'<div class="field"><label>LJI — max 5920 mm</label><input type="number" id="f-lji" placeholder="mm"></div>'
+  +'<div class="row2"><div class="field"><label>Coulisse droite</label>'+radio('coulisse-d',['F','F/Eq'],'cd')+'</div>'
+  +'<div class="field"><label>Coulisse gauche</label>'+radio('coulisse-g',['F','F/Eq'],'cg')+'</div></div>'
+  +'<div class="field"><label>LDC</label><input type="number" id="f-ldc" placeholder="mm"></div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">3</span>Hauteur</div>'
+  +'<div class="row2"><div class="field"><label>HST</label><input type="number" id="f-hst" placeholder="mm"></div><div class="field"><label>HHT</label><input type="number" id="f-hht" placeholder="mm"></div></div>'
+  +'<div class="field"><label>Nacelle</label>'+radio('nacelle',['NON','12m','16m','Ciseaux'],'nac')+'</div>'
+  +'<div class="field"><label>Location nacelle</label>'+radio('loc-nacelle',['À faire','Faite client','Matériel client'],'ln')+'</div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">4</span>Supports de pose</div>'
+  +'<div class="field"><label>Droite</label>'+radio('support-d',['Bois','Métal','Béton'],'sd')+'</div>'
+  +'<div class="field"><label>Gauche</label>'+radio('support-g',['Bois','Métal','Béton'],'sg')+'</div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">5</span>Composition du rideau</div>'
+  +'<div class="field"><label>Coloris</label><input type="text" id="f-coloris" placeholder="ex: Vert, RAL..."></div>'
+  +'<div class="row2"><div class="field"><label>Hauteur filet (haut)</label><input type="number" id="f-haut-filet" placeholder="mm"></div>'
+  +'<div class="field"><label>Hauteur bâche (bas)</label><input type="number" id="f-bas-bache" placeholder="1350 ou 2850"></div></div>'
+  +'<div class="field"><label>Hauteur bavette (défaut 150 mm)</label><input type="number" id="f-bavette" placeholder="150"></div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">6</span>Type de manœuvre</div>'
+  +'<div class="field"><label>Électrique (côté)</label>'+radio('manoeuvre-elec',['G','D','NON'],'me')+'</div>'
+  +'<div class="field"><label>Manœuvre de secours Ø89</label>'+radio('secours',['OUI','NON'],'sec')+'</div>'
+  +'<div class="field"><label>Treuil à chaîne Ø89</label>'+radio('treuil',['G','D','NON'],'tr')+'</div>'
+  +'<div class="field"><label>Manivelle</label>'+radio('manivelle',['G','D','NON'],'man')+'</div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">7</span>Type de commande</div>'
+  +'<div class="field"><label>Commande</label>'+radioKV('commande',[{v:'Inverseur M/D',l:'Inverseur M/D'},{v:'Récepteur-Émetteur',l:'Récepteur+Émetteur'},{v:'Récepteur seul',l:'Récepteur seul'},{v:'Émetteur supp.',l:'Émetteur supp.'}],'cmd')+'</div>'
+  +'<div class="field"><label>Autre position</label><input type="text" id="f-pos-autre" placeholder="Préciser..."></div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">8</span>Accessoires</div>'
+  +'<div class="chk-group">'
+  +'<label class="chk"><input type="checkbox" id="acc-barrage"> Barrage Photo-électrique</label>'
+  +'<label class="chk"><input type="checkbox" id="acc-palpeuse"> Barre palpeuse</label>'
+  +'<label class="chk"><input type="checkbox" id="acc-urgence"> Bouton arrêt urgence</label>'
+  +'<label class="chk"><input type="checkbox" id="acc-boucle"> KIT Boucle</label>'
+  +'<label class="chk"><input type="checkbox" id="acc-feu"> Feu clignotant</label>'
+  +'</div></div>'+sketchPhotoBlock();
+}
+
+function formSomogliss(){
+  return '<div class="form-header"><div><div class="form-header-name">SOMOGLISS</div><div class="form-header-sub">Rideau coulissant — Pose Eurosom</div></div></div>'
+  +'<div class="meta-card">'
+  +'<div class="row2"><div class="field"><label>Date</label><input type="text" id="f-date"></div><div class="field"><label>N° affaire</label><input type="text" id="f-affaire" placeholder="ex: 2024-001"></div></div>'
+  +'<div class="field"><label>Nom client</label><input type="text" id="f-client"></div>'
+  +'<div class="field"><label>Métreur</label><input type="text" id="f-metreur"></div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">1</span>Relevé initial</div>'
+  +'<div class="field"><label>Localisation</label><input type="text" id="f-localisation" placeholder="Bâtiment, zone..."></div>'
+  +'<div class="row2"><div class="field"><label>LJI (mm)</label><input type="number" id="f-lji"></div><div class="field"><label>HST (mm)</label><input type="number" id="f-hst"></div></div>'
+  +'<div class="field"><label>Nacelle</label>'+radio('nacelle',['NON','OUI 12m','OUI 16m','Ciseaux'],'nac')+'</div>'
+  +'<div class="field"><label>Location nacelle</label>'+radio('loc-nacelle',['À faire','Faite client','Matériel client'],'ln')+'</div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">2</span>Dimensions de commande</div>'
+  +'<div class="field"><label>Côté de pose</label>'+radio('cote-pose',['INT','EXT'],'cp')+'</div>'
+  +'<div class="field"><label>LT — Largeur rideau fini (mm)</label><input type="number" id="f-lt"></div>'
+  +'<div class="field"><label>Forme</label>'+radio('forme',['Rectangle','Trapèze'],'forme')+'</div>'
+  +'<div class="row2"><div class="field"><label>HST rectangle (mm)</label><input type="number" id="f-hst-rect"></div><div class="field"><label>HST trapèze petite H (mm)</label><input type="number" id="f-hst-pet"></div></div>'
+  +'<div class="row2"><div class="field"><label>HST trapèze grande H (mm)</label><input type="number" id="f-hst-grd"></div><div class="field"><label>Déclivité</label>'+radio('decliv',['Sol','Traverse haute'],'dec')+'</div></div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">3</span>Type de pose</div>'
+  +'<div class="field"><label>Type de pose</label>'+radio('type-pose',['PL','F1'],'tp')+'</div>'
+  +'<div class="field"><label>Nature traverse haute</label>'+radio('traverse',['Bois','Métal','IPN'],'trav')+'</div>'
+  +'<div class="field"><label>Partie fixe</label>'+radio('partie-fixe',['G','D','Aucune (D/S)'],'pf')+'</div>'
+  +'<div class="row2"><div class="field"><label>Côté opposé — support</label>'+radio('support-opp',['Bois','Métal','Béton'],'sopp')+'</div>'
+  +'<div class="field"><label>Côté manœuvre — support</label>'+radio('support-man',['Bois','Métal','Béton'],'sman')+'</div></div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">4</span>Composition bâche / filet</div>'
+  +'<div class="row2"><div class="field"><label>Hauteur filet partie haute (mm)</label><input type="number" id="f-haut-filet"></div><div class="field"><label>Hauteur bâche partie basse (mm)</label><input type="number" id="f-bas-bache"></div></div>'
+  +'<div class="field"><label>Coloris</label><input type="text" id="f-coloris" placeholder="ex: Vert foncé, Ivoire..."></div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">5</span>Options</div>'
+  +'<div class="field"><label>Pièce verrouillage barrières</label>'+radio('verrouillage',['OUI','NON'],'verr')+'</div>'
+  +'<div class="field"><label>Équerre maintien rideau ouvert</label>'+radio('equerre',['OUI','NON'],'eq')+'</div>'
+  +'<div class="field"><label>Distance sol / bas du SOMOGLISS (mm)</label><input type="number" id="f-dist-sol"></div>'
+  +'<div class="field"><label>Longueur rail supplémentaire (mm)</label><input type="number" id="f-rail-supp"></div>'
+  +'<div class="field"><label>KIT Cordon de manœuvre</label>'+radio('kit-cordon',['OUI','NON'],'kc')+'</div>'
+  +'<div class="field"><label>Commentaires</label><textarea id="f-comment1" placeholder="Notes, schémas..."></textarea></div>'
+  +'</div>'+sketchPhotoBlock();
+}
+
+// --- SOMROLLER ---
+function formSomroller(){
+  return '<div class="form-header"><div><div class="form-header-name">SOMROLLER</div><div class="form-header-sub">Rideau enrouleur</div></div></div>'
+  +'<div class="meta-card">'
+  +'<div class="row2"><div class="field"><label>Date</label><input type="text" id="f-date"></div><div class="field"><label>N° affaire</label><input type="text" id="f-affaire"></div></div>'
+  +'<div class="field"><label>Réf. client</label><input type="text" id="f-client"></div>'
+  +'<div class="field"><label>Métreur</label><input type="text" id="f-metreur"></div>'
+  +'<div class="field"><label>Produit</label>'+radio('produit-sr',['Somroller 1T','Somroller 2T','Rideau accès DT','Rideau 2T89'],'psr')+'</div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">1</span>Relevé initial</div>'
+  +'<div class="row2"><div class="field"><label>LJI (mm)</label><input type="number" id="f-lji"></div><div class="field"><label>Nbre de travées</label><input type="number" id="f-travees"></div></div>'
+  +'<div class="field"><label>Largeur des travées (mm)</label><input type="text" id="f-larg-travees" placeholder="ex: 3000 / 3000 / 2800"></div>'
+  +'<div class="field"><label>HJI (mm)</label><input type="number" id="f-hji"></div>'
+  +'<div class="field"><label>Hauteur de pose (m)</label><input type="number" id="f-h-pose" step="0.1"></div>'
+  +'<div class="field"><label>Nacelle</label>'+radio('nacelle',['NON','OUI'],'nac')+'</div>'
+  +'<div class="field"><label>Location nacelle</label>'+radio('loc-nacelle',['À faire','Faite client','Matériel client'],'ln')+'</div>'
+  +'<div class="field"><label>Commentaires</label><textarea id="f-comment1" placeholder="Notes..."></textarea></div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">2</span>Dimensions hors tout rideau</div>'
+  +'<div class="row2"><div class="field"><label>LT (LJI + poteaux) mm</label><input type="number" id="f-lt"></div><div class="field"><label>HHT (mm)</label><input type="number" id="f-hht"></div></div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">3</span>Consolidation du rideau</div>'
+  +'<div class="field"><label>Nbre guides = Nbre travées</label><input type="text" id="f-nb-guides" placeholder="ex: 3 x Ø63"></div>'
+  +'<div class="field"><label>Guide côté moteur (si 2T)</label><input type="text" id="f-guide-moteur" placeholder="Nombre Ø63"></div>'
+  +'<div class="field"><label>Guide intermédiaire</label><input type="text" id="f-guide-inter" placeholder="Nombre Ø63"></div>'
+  +'<div class="field"><label>Contre-guide intermédiaire</label><input type="text" id="f-contre-guide" placeholder="Nombre Ø63"></div>'
+  +'<div class="field"><label>Guides + Contre-guides démontables</label>'+radio('guides-demo',['OUI','NON'],'gd')+'</div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">4</span>Supports de pose</div>'
+  +'<div class="field"><label>Traverse haute</label>'+radio('traverse',['Bois','Métal','Béton'],'trav')+'</div>'
+  +'<div class="field"><label>Poteaux (nature)</label>'+radio('poteaux',['Bois','Métal','Béton'],'pot')+'</div>'
+  +'<div class="field"><label>Section poteau métal (si métal)</label><input type="text" id="f-section-pot" placeholder="ex: IPE 200"></div>'
+  +'<div class="field"><label>Partie basse (fixation guides)</label>'+radio('partie-basse',['Sol','Allège','Barrière'],'pb')+'</div>'
+  +'<div class="field cond-allege" id="field-allege-sr" style="display:none"><label>Nature allège</label>'+radio('allege',['Bois','Métal','Béton'],'all')+'</div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">5</span>Protections</div>'
+  +'<div class="field"><label>Partie basse</label>'+radio('protect-bas',['Cornière PVC','Liteaux','Invitations','Rien'],'pb2')+'</div>'
+  +'<div class="field"><label>Poteaux</label>'+radio('protect-pot',['Cornière PVC','Liteaux','PPAL','Rien','Boudin'],'pp')+'</div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">6</span>Finitions</div>'
+  +'<div class="field"><label>Soufflet côté moteur</label>'+radio('souff-mot-yn',['OUI','NON'],'smyn')+'</div>'
+  +'<div class="field cond-souff-mot-mat" id="field-souff-mot-mat-sr" style="display:none"><label>Soufflet côté moteur — matière</label>'+radio('souff-mot-mat',['Toile','Filet'],'smm')+'</div>'
+  +'<div class="field cond-souff-mot" id="field-souff-mot-col-sr" style="display:none"><label>Soufflet côté moteur — couleur</label>'+radio('souff-mot-col',['Ivoire','Vert foncé','Gris','Incolore'],'smc')+'</div>'
+  +'<div class="field"><label>Joue côté moteur</label>'+radio('joue-mot-yn',['OUI','NON'],'jmyn')+'</div>'
+  +'<div class="field cond-joue-mot" id="field-joue-mot-col-sr" style="display:none"><label>Joue côté moteur — couleur</label>'+radio('joue-mot',['Ivoire','Vert foncé','Gris','Vert réséda'],'jm')+'</div>'
+  +'<div class="field"><label>Soufflet côté opposé</label>'+radio('souff-opp-yn',['OUI','NON'],'soyn')+'</div>'
+  +'<div class="field cond-souff-opp-mat" id="field-souff-opp-mat-sr" style="display:none"><label>Soufflet côté opposé — matière</label>'+radio('souff-opp-mat',['Toile','Filet'],'som')+'</div>'
+  +'<div class="field cond-souff-opp" id="field-souff-opp-col-sr" style="display:none"><label>Soufflet côté opposé — couleur</label>'+radio('souff-opp-col',['Ivoire','Vert foncé','Gris','Incolore'],'soc')+'</div>'
+  +'<div class="field"><label>Joue côté opposé</label>'+radio('joue-opp-yn',['OUI','NON'],'joyn')+'</div>'
+  +'<div class="field cond-joue-opp" id="field-joue-opp-col-sr" style="display:none"><label>Joue côté opposé — couleur</label>'+radio('joue-opp',['Ivoire','Vert foncé','Gris','Vert réséda'],'jo')+'</div>'
+  +'<div class="field"><label>2 contre-soufflets</label>'+radio('contre-souff',['OUI','NON'],'cs')+'</div>'
+  +'<div class="field"><label>Dim contre-soufflets</label>'+radio('dim-cs',['800','Autre'],'dcs')+'</div>'
+  +'<div class="field"><label>Tuyau PVC</label>'+radio('tuyau-pvc',['OUI Ivoire','OUI Gris','NON'],'tpvc')+'</div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">9</span>Rideaux</div>'
+  +'<div class="field"><label>Partie haute — nature</label>'+radio('ph-nature',['Bâche','Filet'],'phn')+'</div>'
+  +'<div class="field"><label>Partie haute — couleur</label>'+radio('ph-couleur',['Ivoire','Vert foncé','Gris','Incolore'],'phc')+'</div>'
+  +'<div class="field"><label>Partie haute — hauteur (mm)</label><input type="number" id="f-ph-haut"></div>'
+  +'<div class="field"><label>Partie basse — nature</label>'+radio('pb-nature',['Bâche','Filet'],'pbn')+'</div>'
+  +'<div class="field"><label>Partie basse — couleur</label>'+radio('pb-couleur',['Ivoire','Vert foncé','Gris','Incolore'],'pbc')+'</div>'
+  +'<div class="field"><label>Partie basse — hauteur (mm)</label><input type="number" id="f-pb-haut"></div>'
+  +'<div class="field"><label>Bavette</label>'+radio('bavette',['OUI','NON'],'bav')+'</div>'
+  +'<div class="field"><label>Hauteur bavette (mm)</label><input type="number" id="f-bavette" placeholder="ex: 250"></div>'
+  +'</div>'+sketchPhotoBlock();
+}
+
+// --- FAMILLE CLASSIQUE ---
+function formClassique(){
+  return '<div class="form-header"><div><div class="form-header-name">FAMILLE CLASSIQUE</div><div class="form-header-sub">CL+ — Vertical — CL+ 2T</div></div></div>'
+  +'<div class="meta-card">'
+  +'<div class="row2"><div class="field"><label>Date</label><input type="text" id="f-date"></div><div class="field"><label>N° affaire</label><input type="text" id="f-affaire"></div></div>'
+  +'<div class="field"><label>Réf. client</label><input type="text" id="f-client"></div>'
+  +'<div class="field"><label>Métreur</label><input type="text" id="f-metreur"></div>'
+  +'<div class="field"><label>Produit</label>'+radio('produit-cl',['CLASSIQUE PLUS (CL+)','VERTICAL (V)','CLASSIQUE PLUS/2T (CL+2T)'],'pcl')+'</div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">1</span>Relevé initial</div>'
+  +'<div class="row2"><div class="field"><label>LJI (mm)</label><input type="number" id="f-lji"></div><div class="field"><label>Nbre de travées</label><input type="number" id="f-travees"></div></div>'
+  +'<div class="field"><label>Largeur des travées (mm)</label><input type="text" id="f-larg-travees" placeholder="ex: 3000 / 3000"></div>'
+  +'<div class="field"><label>HJI (mm)</label><input type="number" id="f-hji"></div>'
+  +'<div class="field"><label>Hauteur de pose (m)</label><input type="number" id="f-h-pose" step="0.1"></div>'
+  +'<div class="field"><label>Nacelle</label>'+radio('nacelle',['NON','OUI'],'nac')+'</div>'
+  +'<div class="field"><label>Location nacelle</label>'+radio('loc-nacelle',['À faire','Faite client','Matériel client'],'ln')+'</div>'
+  +'<div class="field"><label>Commentaires</label><textarea id="f-comment1" placeholder="Notes..."></textarea></div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">2</span>Dimensions hors tout rideau</div>'
+  +'<div class="row2"><div class="field"><label>LT (LJI + poteaux) mm</label><input type="number" id="f-lt"></div><div class="field"><label>HHT (mm)</label><input type="number" id="f-hht"></div></div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">3</span>Consolidation</div>'
+  +'<div class="field"><label>Nbre guides = Nbre travées</label><input type="text" id="f-nb-guides" placeholder="Nombre Ø63"></div>'
+  +'<div class="field"><label>Guide côté moteur (si Vertical ou CL+ 2T)</label><input type="text" id="f-guide-moteur" placeholder="Nombre Ø63"></div>'
+  +'<div class="field"><label>Guide intermédiaire</label><input type="text" id="f-guide-inter" placeholder="Nombre Ø63"></div>'
+  +'<div class="field"><label>Contre-guide intermédiaire</label><input type="text" id="f-contre-guide" placeholder="Nombre Ø63"></div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">4</span>Supports de pose</div>'
+  +'<div class="field"><label>Traverse haute</label>'+radio('traverse',['Bois','Métal','Béton'],'trav')+'</div>'
+  +'<div class="field"><label>Poteaux (nature)</label>'+radio('poteaux',['Bois','Métal','Béton'],'pot')+'</div>'
+  +'<div class="field"><label>Section poteau métal</label><input type="text" id="f-section-pot" placeholder="ex: IPE 200"></div>'
+  +'<div class="field"><label>Partie basse</label>'+radio('partie-basse',['Sol','Allège','Barrière'],'pb')+'</div>'
+  +'<div class="field cond-allege" id="field-allege-cl" style="display:none"><label>Nature allège</label>'+radio('allege',['Bois','Métal','Béton'],'all')+'</div>'
+  +'<div class="field cond-allege" id="field-h-allege-cl" style="display:none"><label>Hauteur de l\'allège (mm)</label><input type="number" id="f-h-allege"></div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">5</span>Protections</div>'
+  +'<div class="field"><label>Partie basse</label>'+radio('protect-bas',['Cornière PVC','Liteaux','Invitations','Rien'],'pb2')+'</div>'
+  +'<div class="field"><label>Poteaux</label>'+radio('protect-pot',['Cornière PVC','Liteaux','PPAL','Rien'],'pp')+'</div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">6</span>Finitions</div>'
+  +'<div class="field"><label>Soufflet côté moteur — matière</label>'+radio('souff-mot-mat',['Toile','Filet','Aucun'],'smm')+'</div>'
+  +'<div class="field cond-souff-mot" id="field-souff-mot-col-cl" style="display:none"><label>Soufflet côté moteur — couleur</label>'+radio('souff-mot-col',['Ivoire','Vert foncé','Gris','Incolore'],'smc')+'</div>'
+  +'<div class="field"><label>Joue côté moteur</label>'+radio('joue-mot-yn',['OUI','NON'],'jmyn')+'</div>'
+  +'<div class="field cond-joue-mot" id="field-joue-mot-col-cl" style="display:none"><label>Joue côté moteur — couleur</label>'+radio('joue-mot',['Ivoire','Vert foncé','Gris','Vert réséda'],'jm')+'</div>'
+  +'<div class="field"><label>Soufflet côté opposé — matière</label>'+radio('souff-opp-mat',['Toile','Filet','Aucun'],'som')+'</div>'
+  +'<div class="field cond-souff-opp" id="field-souff-opp-col-cl" style="display:none"><label>Soufflet côté opposé — couleur</label>'+radio('souff-opp-col',['Ivoire','Vert foncé','Gris','Incolore'],'soc')+'</div>'
+  +'<div class="field"><label>Joue côté opposé</label>'+radio('joue-opp-yn',['OUI','NON'],'joyn')+'</div>'
+  +'<div class="field cond-joue-opp" id="field-joue-opp-col-cl" style="display:none"><label>Joue côté opposé — couleur</label>'+radio('joue-opp',['Ivoire','Vert foncé','Gris','Vert réséda'],'jo')+'</div>'
+  +'<div class="field"><label>2 contre-soufflets</label>'+radio('contre-souff',['OUI','NON'],'cs')+'</div>'
+  +'<div class="field"><label>Dim contre-soufflets</label>'+radio('dim-cs',['800','Autre'],'dcs')+'</div>'
+  +'<div class="field"><label>Tuyau PVC</label>'+radio('tuyau-pvc',['OUI Ivoire','OUI Gris','NON'],'tpvc')+'</div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">6</span>Finitions</div>'
+  +'<div class="field"><label>Soufflet côté moteur</label>'+radio('souff-mot-yn',['OUI','NON'],'smyn')+'</div>'
+  +'<div class="field cond-souff-mot-mat" id="field-souff-mot-mat-cl" style="display:none"><label>Soufflet côté moteur — matière</label>'+radio('souff-mot-mat',['Toile','Filet'],'smm')+'</div>'
+  +'<div class="field cond-souff-mot" id="field-souff-mot-col-cl" style="display:none"><label>Soufflet côté moteur — couleur</label>'+radio('souff-mot-col',['Ivoire','Vert foncé','Gris','Incolore'],'smc')+'</div>'
+  +'<div class="field"><label>Joue côté moteur</label>'+radio('joue-mot-yn',['OUI','NON'],'jmyn')+'</div>'
+  +'<div class="field cond-joue-mot" id="field-joue-mot-col-cl" style="display:none"><label>Joue côté moteur — couleur</label>'+radio('joue-mot',['Ivoire','Vert foncé','Gris','Vert réséda'],'jm')+'</div>'
+  +'<div class="field"><label>Soufflet côté opposé</label>'+radio('souff-opp-yn',['OUI','NON'],'soyn')+'</div>'
+  +'<div class="field cond-souff-opp-mat" id="field-souff-opp-mat-cl" style="display:none"><label>Soufflet côté opposé — matière</label>'+radio('souff-opp-mat',['Toile','Filet'],'som')+'</div>'
+  +'<div class="field cond-souff-opp" id="field-souff-opp-col-cl" style="display:none"><label>Soufflet côté opposé — couleur</label>'+radio('souff-opp-col',['Ivoire','Vert foncé','Gris','Incolore'],'soc')+'</div>'
+  +'<div class="field"><label>Joue côté opposé</label>'+radio('joue-opp-yn',['OUI','NON'],'joyn')+'</div>'
+  +'<div class="field cond-joue-opp" id="field-joue-opp-col-cl" style="display:none"><label>Joue côté opposé — couleur</label>'+radio('joue-opp',['Ivoire','Vert foncé','Gris','Vert réséda'],'jo')+'</div>'
+  +'<div class="field"><label>2 contre-soufflets</label>'+radio('contre-souff',['OUI','NON'],'cs')+'</div>'
+  +'<div class="field"><label>Dim contre-soufflets</label>'+radio('dim-cs',['800','Autre'],'dcs')+'</div>'
+  +'<div class="field"><label>Tuyau PVC</label>'+radio('tuyau-pvc',['OUI Ivoire','OUI Gris','NON'],'tpvc')+'</div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">7</span>Manœuvre</div>'
+  +'<div class="field"><label>Type</label>'+radio('manoeuvre-type',['Électrique Mono','Électrique Triphasé'],'mt')+'</div>'
+  +'<div class="field"><label>Nombre de moteurs</label>'+radio('nb-moteurs',['1','2'],'nm')+'</div>'
+  +'<div class="field cond-1mot" id="field-pos-mot-1-cl" style="display:none"><label>Positionnement moteur</label>'+radio('pos-mot-1',['G','D'],'pm1')+'</div>'
+  +'<div class="field cond-2mot" id="field-cmd-groupee-cl" style="display:none"><label>Commande groupée</label>'+radio('cmd-groupee',['OUI','NON'],'cg')+'</div>'
+  +'<div class="field cond-2mot" id="field-pos-mot-bas-cl" style="display:none"><label>Positionnement moteur bas</label>'+radio('pos-mot-bas',['G','D'],'pmb')+'</div>'
+  +'<div class="field cond-2mot" id="field-pos-mot-haut-cl" style="display:none"><label>Positionnement moteur haut</label>'+radio('pos-mot-haut',['G','D'],'pmh')+'</div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">8</span>Commande / Automatismes</div>'
+  +'<div class="field"><label>Type commande</label>'+radio('commande',['Inverseur'],'cmd')+'</div>'
+  +'<div class="field"><label>Régulation de température</label>'+radio('reg-temp',['OUI','NON'],'rt')+'</div>'
+  +'<div class="field cond-sondes" id="field-nb-sondes-cl" style="display:none"><label>Nbre sondes T°</label><input type="number" id="f-nb-sondes"></div>'
+  +'<div class="field"><label>Anémomètre</label>'+radio('anemometre',['OUI','NON'],'ane')+'</div>'
+  +'<div class="field"><label>Détecteur de pluie</label>'+radio('detect-pluie',['OUI','NON'],'dp')+'</div>'
+  +'</div>'
+  +'<div class="step"><div class="step-title"><span class="step-num">9</span>Rideaux</div>'
+  +'<div class="field"><label>Partie haute — nature</label>'+radio('ph-nature',['Bâche','Filet'],'phn')+'</div>'
+  +'<div class="field"><label>Partie haute — couleur</label>'+radio('ph-couleur',['Ivoire','Vert foncé','Gris','Incolore'],'phc')+'</div>'
+  +'<div class="field"><label>Partie haute — hauteur (mm)</label><input type="number" id="f-ph-haut"></div>'
+  +'<div class="field"><label>Partie basse — nature</label>'+radio('pb-nature',['Bâche','Filet'],'pbn')+'</div>'
+  +'<div class="field"><label>Partie basse — couleur</label>'+radio('pb-couleur',['Ivoire','Vert foncé','Gris','Incolore'],'pbc')+'</div>'
+  +'<div class="field"><label>Partie basse — hauteur (mm)</label><input type="number" id="f-pb-haut"></div>'
+  +'</div>'+sketchPhotoBlock();
+}
+
+function sketchPhotoBlock(){
+  // Le bloc schéma/photo est maintenant intégré dans prepClientBlock
+  return prepClientBlock();
+}
+
+function prepClientBlock(){
+  return '<div class="step" id="step-prep" style="border-color:#e67e22">'
+    +'<div class="step-title" style="color:#d35400"><span class="step-num" style="background:#e67e22">&#128203;</span>Préparation client</div>'
+
+    // Infos contact client
+    +'<div class="prep-meta">'
+    +'<div class="row2">'
+    +'<div class="field"><label>Téléphone client</label><input type="text" id="prep-tel" placeholder="06 XX XX XX XX"></div>'
+    +'<div class="field"><label>Email client</label><input type="text" id="prep-email" placeholder="client@email.com"></div>'
+    +'</div></div>'
+
+    // Accordion tâches — rendu dynamiquement
+    +'<div id="prep-accordion"></div>'
+
+    // Tâche personnalisée
+    +'<div class="task-custom" style="margin-top:8px">'
+    +'<input type="text" id="prep-custom-input" placeholder="Ajouter une tâche...">'
+    +'<button class="task-add-btn" onclick="addPrepTask()">+ Ajouter</button>'
+    +'</div>'
+    +'<div id="prep-custom-list"></div>'
+
+    // Photo + dessin
+    +'<div class="field" style="margin-top:14px">'
+    +'<label style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Photo chantier (importez puis dessinez par-dessus)</label>'
+    +'<div class="photo-draw-zone" id="photo-draw-zone">'
+    +'<div id="photo-placeholder" style="text-align:center;padding:20px;color:#bbb">'
+    +'<div style="font-size:36px;margin-bottom:6px">📷</div>'
+    +'<div class="photo-upload-btn" style="display:inline-block;padding:10px 18px">Importer une photo</div>'
+    +'<input type="file" id="photo-input" accept="image/*" style="display:none">'
+    +'</div>'
+    +'<canvas id="sketch-canvas" class="sketch-canvas" style="display:none;width:100%;border-radius:8px"></canvas>'
+    +'</div>'
+    +'<div class="sketch-tools" id="sketch-tools" style="display:none">'
+    +'<button class="sketch-tool-btn active" id="tool-pen" onclick="setTool(\'pen\')">✏️ Stylo</button>'
+    +'<button class="sketch-tool-btn" id="tool-eraser" onclick="setTool(\'eraser\')">🧹 Gomme</button>'
+    +'<button class="sketch-tool-btn" onclick="clearAnnotations()">🗑️ Effacer annotations</button>'
+    +'<div style="width:1px;background:#ddd;height:24px;margin:0 2px"></div>'
+    +'<div class="color-dot active" style="background:#e74c3c" onclick="setColor(\'#e74c3c\',this)" title="Rouge"></div>'
+    +'<div class="color-dot" style="background:#222" onclick="setColor(\'#222\',this)" title="Noir"></div>'
+    +'<div class="color-dot" style="background:#2980b9" onclick="setColor(\'#2980b9\',this)" title="Bleu"></div>'
+    +'<div class="color-dot" style="background:#27ae60" onclick="setColor(\'#27ae60\',this)" title="Vert"></div>'
+    +'<div class="color-dot" style="background:#f1c40f" onclick="setColor(\'#f1c40f\',this)" title="Jaune"></div>'
+    +'<div style="width:1px;background:#ddd;height:24px;margin:0 2px"></div>'
+    +'<div class="size-btn active" id="sz-s" onclick="setSize(3,this)">S</div>'
+    +'<div class="size-btn" id="sz-m" onclick="setSize(6,this)">M</div>'
+    +'<div class="size-btn" id="sz-l" onclick="setSize(10,this)">L</div>'
+    +'<button class="sketch-tool-btn" onclick="removePhoto()" style="margin-left:auto;color:#c0392b">✕ Supprimer</button>'
+    +'</div></div>'
+
+    // Remarques
+    +'<div class="field" style="margin-top:10px"><label>Remarques</label>'
+    +'<textarea id="prep-remarques" placeholder="Notes spécifiques au chantier..." style="min-height:60px"></textarea>'
+    +'</div></div>';
+}
+
+// =========================================================
+// SCHÉMA CANVAS
+// =========================================================
+var sketchState = {tool:'pen', color:'#e74c3c', size:3, drawing:false, lastX:0, lastY:0};
+var photoBase = null;
+var prepChecked = {};
+var prepCustomTasks = [];
+var photosList = []; // conservé pour compatibilité historique
+
+function initSketch(){
+  var canvas = document.getElementById('sketch-canvas');
+  if(!canvas){ setTimeout(initSketch, 100); return; }
+  // Vérifie que le canvas est bien dans le DOM visible
+  if(!canvas.offsetParent && canvas.closest('#page-form') && !canvas.closest('#page-form').classList.contains('active')){
+    setTimeout(initSketch, 100); return;
+  }
+
+  var ctx = canvas.getContext('2d');
+  var w = canvas.parentElement ? canvas.parentElement.clientWidth : 480;
+  if(w < 10) w = 480;
+  canvas.width = w;
+  canvas.height = 220;
+  ctx.fillStyle = '#fafafa';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // Détache les anciens listeners en remplaçant le canvas par un clone
+  var newCanvas = canvas.cloneNode(true);
+  canvas.parentNode.replaceChild(newCanvas, canvas);
+  canvas = newCanvas;
+  ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fafafa';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  sketchState.drawing = false;
+
+  function getPos(e){
+    var r = canvas.getBoundingClientRect();
+    var scaleX = canvas.width / r.width;
+    var scaleY = canvas.height / r.height;
+    var src = e.touches ? e.touches[0] : e;
+    return {x:(src.clientX - r.left)*scaleX, y:(src.clientY - r.top)*scaleY};
+  }
+  function start(e){
+    e.preventDefault();
+    sketchState.drawing = true;
+    var p = getPos(e);
+    sketchState.lastX = p.x; sketchState.lastY = p.y;
+  }
+  function move(e){
+    e.preventDefault();
+    if(!sketchState.drawing) return;
+    var p = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(sketchState.lastX, sketchState.lastY);
+    ctx.lineTo(p.x, p.y);
+    if(sketchState.tool === 'eraser'){
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.lineWidth = sketchState.size * 5;
+      ctx.strokeStyle = '#fafafa';
+    } else {
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.lineWidth = sketchState.size;
+      ctx.strokeStyle = sketchState.color;
+    }
+    ctx.stroke();
+    sketchState.lastX = p.x; sketchState.lastY = p.y;
+  }
+  function end(e){ sketchState.drawing = false; }
+
+  canvas.addEventListener('mousedown', start);
+  canvas.addEventListener('mousemove', move);
+  canvas.addEventListener('mouseup', end);
+  canvas.addEventListener('mouseleave', end);
+  // Attacher l'écouteur photo via delegation (robuste pour DOM injecté)
+  var photoInput = document.getElementById('photo-input');
+  if(photoInput){
+    photoInput.addEventListener('change', function(){ addPhotos(this); });
+  }
+}
+
+// Délégation photo-input
+document.addEventListener('click', function(e){
+  if(e.target && e.target.classList.contains('photo-upload-btn')){
+    var input = document.getElementById('photo-input');
+    if(input){ e.preventDefault(); input.click(); }
+  }
+});
+
+// Délégation change photo-input via bubbling
+document.addEventListener('change', function(e){
+  if(e.target && e.target.id === 'photo-input'){
+    var file = e.target.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev){
+      photoBase = ev.target.result;
+      requestAnimationFrame(function(){ requestAnimationFrame(initPhotoCanvas); });
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  }
+});
+
+function setTool(t){
+  sketchState.tool=t;
+  document.getElementById('tool-pen').classList.toggle('active',t==='pen');
+  document.getElementById('tool-eraser').classList.toggle('active',t==='eraser');
+}
+function setColor(c,el){
+  sketchState.color=c; sketchState.tool='pen';
+  document.querySelectorAll('.color-dot').forEach(function(d){d.classList.remove('active');});
+  el.classList.add('active');
+  document.getElementById('tool-pen').classList.add('active');
+  document.getElementById('tool-eraser').classList.remove('active');
+}
+function setSize(s,el){
+  sketchState.size=s;
+  document.querySelectorAll('.size-btn').forEach(function(b){b.classList.remove('active');});
+  el.classList.add('active');
+}
+function clearSketch(){
+  var canvas = document.getElementById('sketch-canvas');
+  if(!canvas) return;
+  var ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = '#fafafa';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+}
+function getSketchData(){
+  var canvas=document.getElementById('sketch-canvas');
+  if(!canvas)return null;
+  // Check if canvas has any drawing
+  var ctx=canvas.getContext('2d');
+  var data=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+  var hasContent=false;
+  for(var i=3;i<data.length;i+=4){if(data[i]>0){hasContent=true;break;}}
+  return hasContent ? canvas.toDataURL('image/png') : null;
+}
+
+// =========================================================
+// PHOTOS
+// =========================================================
+function addPhotos(input){
+  var files = Array.from(input.files);
+  files.forEach(function(f){
+    var reader = new FileReader();
+    reader.onload = function(e){
+      photosList.push(e.target.result);
+      renderPhotos();
+    };
+    reader.readAsDataURL(f);
+  });
+  input.value='';
+}
+function removePhoto(i){
+  photosList.splice(i,1);
+  renderPhotos();
+}
+function renderPhotos(){
+  var grid=document.getElementById('photos-grid');
+  if(!grid)return;
+  grid.innerHTML=photosList.map(function(p,i){
+    return '<div class="photo-thumb"><img src="'+p+'" alt="Photo '+(i+1)+'">'
+      +'<button class="photo-del" onclick="removePhoto('+i+')">×</button></div>';
+  }).join('');
+}
+
+
+function collectForm(){
+  var d = {id:Date.now(), produit_type:currentProduit,
+    date:gv('f-date')||new Date().toLocaleDateString('fr-FR'),
+    affaire:gv('f-affaire'), client:gv('f-client'), metreur:gv('f-metreur')};
+
+  // Champs communs
+  ['f-lji','f-hst','f-hht','f-lt','f-hji','f-h-pose','f-travees','f-larg-travees',
+   'f-ldc','f-coloris','f-haut-filet','f-bas-bache','f-bavette','f-comment1',
+   'f-couleur-capot','f-produit','f-hst-rect','f-hst-pet','f-hst-grd','f-dist-sol',
+   'f-rail-supp','f-nb-guides','f-guide-moteur','f-guide-inter','f-contre-guide',
+   'f-section-pot','f-h-allege','f-ph-haut','f-pb-haut','f-manivelle','f-nb-sondes',
+   'f-pos-autre'
+  ].forEach(function(id){var k=id.replace('f-','').replace(/-/g,'_');d[k]=gv(id);});
+
+  // Schéma et photos
+  d.sketch_data = getSketchData();
+  d.photos = photosList.slice();
+  // Préparation client
+  d.prep = collectPrepData();
+
+  // Radios — cherche tous les inputs radio dans le formulaire
+  document.querySelectorAll('#form-content input[type=radio]:checked').forEach(function(e){
+    d['r_'+e.name.replace(/-/g,'_')] = e.value;
+  });
+  // Checkboxes
+  ['acc-barrage','acc-palpeuse','acc-urgence','acc-boucle','acc-feu'].forEach(function(id){
+    d[id.replace(/-/g,'_')]=gc(id);
+  });
+  return d;
+}
+
+// =========================================================
+// APERÇU
+// =========================================================
+function buildPreview(d){
+  if(d.produit_type==='bvr') return previewBVR(d);
+  if(d.produit_type==='somogliss') return previewSomogliss(d);
+  if(d.produit_type==='somroller') return previewSomroller(d);
+  if(d.produit_type==='classique') return previewClassique(d);
+  return '';
+}
+
+function xlHead(title, subtitle, cols){
+  return '<table class="xl" cellspacing="0" cellpadding="0">'
+    +'<tr><td colspan="'+cols+'" class="th">'+title+'</td></tr>'
+    +'<tr><td colspan="'+cols+'" class="sub">'+subtitle+'</td></tr>';
+}
+function xlInfoRow(d, cols, extra){
+  return '<tr><td colspan="2" class="info">Date : <strong>'+d.date+'</strong></td>'
+    +'<td colspan="2" class="info">N° affaire : <strong>'+(d.affaire||'—')+'</strong></td>'
+    +(extra||'')+'</tr>'
+    +'<tr><td colspan="4" class="info">Réf. client : <strong>'+(d.client||'—')+'</strong></td>'+(extra?'<td></td>':'')+'</tr>'
+    +'<tr><td colspan="4" class="info">Métreur : <strong>'+(d.metreur||'—')+'</strong></td>'+(extra?'<td></td>':'')+'</tr>';
+}
+function xlStep(title, cols){
+  return '<tr><td colspan="'+cols+'" class="etape">'+title+'</td></tr>';
+}
+function xlRow2(l1,v1,l2,v2){
+  return '<tr><td class="lbl">'+l1+'</td><td class="vhl">'+vhl(v1)+'</td><td class="lbl">'+l2+'</td><td class="vhl">'+vhl(v2)+'</td></tr>';
+}
+function xlRow(label, val, cols, cls){
+  return '<tr><td colspan="2" class="lbl">'+label+'</td><td colspan="'+(cols-2)+'" class="'+(cls||'val')+'">'+val+'</td></tr>';
+}
+
+function previewBVR(d){
+  var p=d.produit||'';
+  var r=d.r_enroulement,bc=d.r_barre_capot,cap=d.r_capot;
+  var cd=d.r_coulisse_d,cg=d.r_coulisse_g,nac=d.r_nacelle,ln=d.r_loc_nacelle;
+  var sd=d.r_support_d,sg=d.r_support_g;
+  var me=d.r_manoeuvre_elec,sec=d.r_secours,tr=d.r_treuil,man=d.r_manivelle;
+  var cmd=d.r_commande,pe=d.r_pos_ext,pi=d.r_pos_int;
+  var accs=[d.acc_barrage&&'Barrage photo',d.acc_palpeuse&&'Palpeuse',d.acc_urgence&&'Urgence',d.acc_boucle&&'KIT Boucle',d.acc_feu&&'Feu clignotant'].filter(Boolean);
+
+  var h = xlHead('FEUILLE de PRISE de MESURES','— Expédition &nbsp;&nbsp; — Pose Eurosom',6);
+  h += '<tr>'
+    +'<td colspan="2" class="info">Date : <strong>'+d.date+'</strong></td>'
+    +'<td colspan="2" class="info">N° affaire : <strong>'+(d.affaire||'—')+'</strong></td>'
+    +'<td class="'+(p==='BVR'?'prod-sel':'prod-no')+'">BVR (BVR)</td><td></td></tr>';
+  h += '<tr><td colspan="4" class="info">Réf. client : <strong>'+(d.client||'—')+'</strong></td>'
+    +'<td class="'+(p==='R4F'?'prod-sel':'prod-no')+'">Rideau 4 F (R4F)</td><td></td></tr>';
+  h += '<tr><td colspan="4" class="info">Métreur : <strong>'+(d.metreur||'—')+'</strong></td>'
+    +'<td class="'+(p==='RST'?'prod-sel':'prod-no')+'" style="font-size:7.5px">RST</td><td></td></tr>';
+
+  h += xlStep('Etape 1 : Côté de pose',4)+'<td colspan="2" class="etape" style="text-align:center;font-size:9px">Commentaires et schémas</td>';
+  h = h.replace('</tr>',''); // Fix: merge étape header
+  h += '<tr><td colspan="2" class="lbl">Côté Enroulement</td>'
+    +'<td colspan="2" class="val center">'+sel(r,'EXT')+'&nbsp;&nbsp;'+sel(r,'INT')+'</td>'
+    +'<td colspan="2" rowspan="3" class="cmt">'+(d.comment1||'')+'</td></tr>';
+  h += '<tr><td colspan="2" class="lbl">Barre de capot</td><td colspan="2" class="val center">'+sel(bc,'OUI')+'&nbsp;'+sel(bc,'NON')+'</td></tr>';
+  h += '<tr><td colspan="2" class="lbl">Capot</td><td colspan="2" class="val center">'+sel(cap,'OUI')+'&nbsp;'+sel(cap,'NON')+(d.couleur_capot?' — <strong>'+d.couleur_capot+'</strong>':'')+'</td></tr>';
+
+  h += '<tr><td colspan="6" class="etape">Etape 2 : Largeur suivant type de pose</td></tr>';
+  h += '<tr><td colspan="2" class="lbl">LJI (max 5920)</td><td colspan="2" class="vhl">'+vhl(d.lji,'mm')+'</td><td colspan="2" class="lbl" style="font-size:7.5px">LJI maximum 5920</td></tr>';
+  h += '<tr><td colspan="2" class="lbl">Coulisse Droite</td><td colspan="2" class="val center">'+sel(cd,'F')+'&nbsp;&nbsp;'+sel(cd,'F/Eq')+'</td><td colspan="2"></td></tr>';
+  h += '<tr><td colspan="2" class="lbl">Coulisse Gauche</td><td colspan="2" class="val center">'+sel(cg,'F')+'&nbsp;&nbsp;'+sel(cg,'F/Eq')+'</td><td colspan="2"></td></tr>';
+  h += '<tr><td colspan="2" class="lbl">LDC</td><td colspan="2" class="vhl">'+vhl(d.ldc,'mm')+'</td><td colspan="2"></td></tr>';
+
+  h += '<tr><td colspan="6" class="etape">Etape 3 : Hauteur</td></tr>';
+  h += '<tr><td colspan="2" class="lbl">HST</td><td colspan="2" class="vhl">'+vhl(d.hst,'mm')+'</td><td colspan="2"></td></tr>';
+  h += '<tr><td colspan="2" class="lbl">HHT</td><td colspan="2" class="vhl">'+vhl(d.hht,'mm')+'</td><td colspan="2"></td></tr>';
+  h += '<tr><td colspan="3" class="val center" style="font-size:8px">Nacelle : '+sel(nac,'12m')+'&nbsp;'+sel(nac,'16m')+'&nbsp;'+sel(nac,'Ciseaux')+'&nbsp;'+sel(nac,'NON')+'</td><td colspan="3"></td></tr>';
+  h += '<tr><td colspan="3" class="val center" style="font-size:8px">'+sel(ln,'À faire')+'&nbsp;&nbsp;'+sel(ln,'Faite client')+'&nbsp;&nbsp;'+sel(ln,'Matériel client')+'</td><td colspan="3"></td></tr>';
+
+  h += '<tr><td colspan="6" class="etape">Etape 4 : Supports de pose</td></tr>';
+  h += '<tr><td colspan="2" class="lbl" rowspan="2">Pose</td><td colspan="2" class="val" style="font-size:8px">D : '+sel(sd,'Bois')+'&nbsp;'+sel(sd,'Métal')+'&nbsp;'+sel(sd,'Béton')+'</td><td colspan="2"></td></tr>';
+  h += '<tr><td colspan="2" class="val" style="font-size:8px">G : '+sel(sg,'Bois')+'&nbsp;'+sel(sg,'Métal')+'&nbsp;'+sel(sg,'Béton')+'</td><td colspan="2"></td></tr>';
+
+  h += '<tr><td colspan="6" class="etape">Etape 5 : Composition du rideau</td></tr>';
+  h += '<tr><td colspan="2" class="lbl">Coloris</td><td colspan="4" class="val">'+vhl(d.coloris)+'</td></tr>';
+  h += '<tr><td colspan="2" class="lbl">Hauteur filet (haut)</td><td colspan="2" class="vhl">'+vhl(d.haut_filet,'mm')+'</td><td colspan="2"></td></tr>';
+  h += '<tr><td colspan="2" class="lbl">Hauteur bâche (bas)</td><td colspan="2" class="vhl">'+vhl(d.bas_bache,'mm')+'</td><td colspan="2" class="val" style="font-size:7.5px">1350 ; 2850</td></tr>';
+  h += '<tr><td colspan="2" class="lbl">Hauteur bavette</td><td colspan="2" class="vhl">'+vhl(d.bavette||'150','mm')+'</td><td colspan="2"></td></tr>';
+
+  h += '<tr><td colspan="6" class="etape">Etape 6 : Type de manœuvre</td></tr>';
+  h += '<tr><td colspan="2" class="lbl">Électrique</td><td colspan="2" class="val center">'+sel(me,'G')+'&nbsp;'+sel(me,'D')+'&nbsp;'+sel(me,'NON')+'</td><td colspan="2"></td></tr>';
+  h += '<tr><td colspan="2" class="lbl" style="font-size:7.5px">Secours (Ø89)</td><td colspan="2" class="val center">'+sel(sec,'OUI')+'&nbsp;'+sel(sec,'NON')+'</td><td colspan="2"></td></tr>';
+  h += '<tr><td colspan="2" class="lbl" style="font-size:7.5px">Treuil chaîne (Ø89)</td><td colspan="2" class="val center">'+sel(tr,'G')+'&nbsp;'+sel(tr,'D')+'&nbsp;'+sel(tr,'NON')+'</td><td colspan="2"></td></tr>';
+  h += '<tr><td colspan="2" class="lbl">Manivelle</td><td colspan="2" class="val center">'+sel(man,'G')+'&nbsp;'+sel(man,'D')+'&nbsp;'+sel(man,'NON')+'</td><td colspan="2"></td></tr>';
+
+  h += '<tr><td colspan="3" class="etape">Etape 7 : Type de commande</td><td colspan="3" class="etape" style="text-align:center;font-size:9px">Position du (des) bouton(s)</td></tr>';
+  h += '<tr><td colspan="3" class="val center">'+sel(cmd,'Inverseur M/D')+'</td>'
+    +'<td colspan="3" rowspan="4" class="val center" style="font-size:8.5px;vertical-align:middle">'
+    +'EXT : '+sel(pe,'G')+'&nbsp;'+sel(pe,'D')+'<br>INT : '+sel(pi,'G')+'&nbsp;'+sel(pi,'D')
+    +(d.pos_autre?'<br>Autre : <strong>'+d.pos_autre+'</strong>':'')+'</td></tr>';
+  h += '<tr><td colspan="3" class="val center">'+sel(cmd,'Récepteur-Émetteur')+'</td></tr>';
+  h += '<tr><td colspan="3" class="val center">'+sel(cmd,'Récepteur seul')+'</td></tr>';
+  h += '<tr><td colspan="3" class="val center">'+sel(cmd,'Émetteur supp.')+'</td></tr>';
+
+  h += '<tr><td colspan="6" class="etape">Etape 8 : Accessoires</td></tr>';
+  [['acc_barrage','Barrage Photo-électrique'],['acc_palpeuse','Barre palpeuse'],['acc_urgence','Bouton arrêt urgence'],['acc_boucle','KIT Boucle'],['acc_feu','Feu clignotant']].forEach(function(a){
+    h += '<tr><td colspan="6" class="val center '+(d[a[0]]?'ok':'no')+'">'+(d[a[0]]?'&#9745;':'&#9744;')+' '+a[1]+'</td></tr>';
+  });
+
+  return h+'</table>';
+}
+
+function previewSomogliss(d){
+  var h = xlHead('FEUILLE PRISE DE MESURES — SOMOGLISS','Pose Eurosom &nbsp;&nbsp; — Expédition',4);
+  h += xlInfoRow(d,4);
+  h += xlStep('Relevé initial — Localisation',4);
+  h += '<tr><td class="lbl">LJI</td><td class="vhl">'+vhl(d.lji,'mm')+'</td><td class="lbl">HST</td><td class="vhl">'+vhl(d.hst,'mm')+'</td></tr>';
+  h += xlRow('Nacelle',sel(d.r_nacelle,'NON')+'&nbsp;'+sel(d.r_nacelle,'OUI 12m')+'&nbsp;'+sel(d.r_nacelle,'OUI 16m')+'&nbsp;'+sel(d.r_nacelle,'Ciseaux'),4,'val center');
+  h += xlRow('Location',sel(d.r_loc_nacelle,'À faire')+'&nbsp;'+sel(d.r_loc_nacelle,'Faite client')+'&nbsp;'+sel(d.r_loc_nacelle,'Matériel client'),4,'val center');
+  h += xlStep('Dimensions de commande',4);
+  h += xlRow('Côté de pose',sel(d.r_cote_pose,'INT')+'&nbsp;&nbsp;'+sel(d.r_cote_pose,'EXT'),4,'val center');
+  h += '<tr><td class="lbl">LT</td><td class="vhl">'+vhl(d.lt,'mm')+'</td><td class="lbl">Forme</td><td class="val center">'+sel(d.r_forme,'Rectangle')+'&nbsp;'+sel(d.r_forme,'Trapèze')+'</td></tr>';
+  h += '<tr><td class="lbl">HST rect.</td><td class="vhl">'+vhl(d.hst_rect,'mm')+'</td><td class="lbl">HST trap. petite H</td><td class="vhl">'+vhl(d.hst_pet,'mm')+'</td></tr>';
+  h += '<tr><td class="lbl">HST trap. grande H</td><td class="vhl">'+vhl(d.hst_grd,'mm')+'</td><td class="lbl">Déclivité</td><td class="val">'+sel(d.r_decliv,'Sol')+'&nbsp;'+sel(d.r_decliv,'Traverse haute')+'</td></tr>';
+  h += xlStep('Type de pose — Supports',4);
+  h += xlRow('Type pose',sel(d.r_type_pose,'PL')+'&nbsp;&nbsp;'+sel(d.r_type_pose,'F1'),4,'val center');
+  h += xlRow('Traverse haute',sel(d.r_traverse,'Bois')+'&nbsp;'+sel(d.r_traverse,'Métal')+'&nbsp;'+sel(d.r_traverse,'IPN'),4,'val center');
+  h += xlRow('Partie fixe',sel(d.r_partie_fixe,'G')+'&nbsp;'+sel(d.r_partie_fixe,'D')+'&nbsp;'+sel(d.r_partie_fixe,'Aucune (D/S)'),4,'val center');
+  h += xlStep('Composition bâche / filet',4);
+  h += '<tr><td class="lbl">Hauteur filet</td><td class="vhl">'+vhl(d.haut_filet,'mm')+'</td><td class="lbl">Hauteur bâche</td><td class="vhl">'+vhl(d.bas_bache,'mm')+'</td></tr>';
+  h += xlRow('Coloris',vhl(d.coloris),4);
+  h += xlStep('Options',4);
+  h += xlRow('KIT Cordon manœuvre',sel(d.r_kit_cordon,'OUI')+'&nbsp;'+sel(d.r_kit_cordon,'NON'),4,'val center');
+  h += xlRow('Dist. sol / bas SOMOGLISS',vhl(d.dist_sol,'mm'),4);
+  h += xlRow('Rail supplémentaire',vhl(d.rail_supp,'mm'),4);
+  if(d.comment1) h += xlRow('Commentaires',d.comment1,4,'cmt');
+  return h+'</table>';
+}
+
+function previewSomroller(d){
+  var h = xlHead('FEUILLE de PRISE de MESURES — SOMROLLER','Pose EUROSOM — Expédition',5);
+  h += '<tr><td colspan="2" class="info">Date : <strong>'+d.date+'</strong></td><td colspan="2" class="info">N° affaire : <strong>'+(d.affaire||'—')+'</strong></td><td class="'+(d.r_produit_sr==='Somroller 1T'?'prod-sel':'prod-no')+'">Somroller 1T</td></tr>';
+  h += '<tr><td colspan="4" class="info">Réf. client : <strong>'+(d.client||'—')+'</strong></td><td class="'+(d.r_produit_sr==='Somroller 2T'?'prod-sel':'prod-no')+'">Somroller 2T</td></tr>';
+  h += '<tr><td colspan="4" class="info">Métreur : <strong>'+(d.metreur||'—')+'</strong></td><td class="'+(d.r_produit_sr==='Rideau accès DT'?'prod-sel':'prod-no')+'">Rideau accès DT</td></tr>';
+  h += previewCommonBody(d,5);
+  return h+'</table>';
+}
+
+function previewClassique(d){
+  var h = xlHead('FEUILLE de PRISE de MESURES — FAMILLE CLASSIQUE','Pose EUROSOM — Expédition',5);
+  h += '<tr><td colspan="2" class="info">Date : <strong>'+d.date+'</strong></td><td colspan="2" class="info">N° affaire : <strong>'+(d.affaire||'—')+'</strong></td>'
+    +'<td class="'+(d.r_produit_cl==='CLASSIQUE PLUS (CL+)'?'prod-sel':'prod-no')+'">CLASSIQUE PLUS</td></tr>';
+  h += '<tr><td colspan="4" class="info">Réf. client : <strong>'+(d.client||'—')+'</strong></td>'
+    +'<td class="'+(d.r_produit_cl==='VERTICAL (V)'?'prod-sel':'prod-no')+'">VERTICAL</td></tr>';
+  h += '<tr><td colspan="4" class="info">Métreur : <strong>'+(d.metreur||'—')+'</strong></td>'
+    +'<td class="'+(d.r_produit_cl==='CLASSIQUE PLUS/2T (CL+2T)'?'prod-sel':'prod-no')+'">CL+ 2T</td></tr>';
+  h += previewCommonBody(d,5);
+  return h+'</table>';
+}
+
+function previewCommonBody(d, cols){
+  var c = cols, h='', x=(c===5?'<td></td>':'');
+
+  // ETAPE 1
+  h += '<tr><td colspan="'+c+'" class="etape">Etape 1 : Relevé initial</td></tr>';
+  h += '<tr><td class="lbl">LJI</td><td class="vhl">'+vhl(d.lji,'mm')+'</td><td class="lbl">HJI</td><td class="vhl">'+vhl(d.hji,'mm')+'</td>'+x+'</tr>';
+  h += '<tr><td class="lbl">Nbre travées</td><td class="vhl">'+vhl(d.travees)+'</td><td class="lbl">Largeur travées</td><td class="val">'+vhl(d.larg_travees)+'</td>'+x+'</tr>';
+  h += '<tr><td colspan="2" class="lbl">Hauteur de pose</td><td colspan="2" class="vhl">'+vhl(d.h_pose,'m')+'</td>'+x+'</tr>';
+  h += '<tr><td colspan="'+c+'" class="val center" style="font-size:8px">Nacelle : '+sel(d.r_nacelle,'NON')+'&nbsp;'+sel(d.r_nacelle,'OUI')+'</td></tr>';
+  h += '<tr><td colspan="'+c+'" class="val center" style="font-size:8px">'+sel(d.r_loc_nacelle,'À faire')+'&nbsp;&nbsp;'+sel(d.r_loc_nacelle,'Faite client')+'&nbsp;&nbsp;'+sel(d.r_loc_nacelle,'Matériel client')+'</td></tr>';
+  if(d.comment1) h += '<tr><td colspan="'+c+'" class="cmt">'+d.comment1+'</td></tr>';
+
+  // ETAPE 2
+  h += '<tr><td colspan="'+c+'" class="etape">Etape 2 : Dimensions hors tout rideau</td></tr>';
+  h += '<tr><td class="lbl">LT</td><td class="vhl">'+vhl(d.lt,'mm')+'</td><td class="lbl">HHT</td><td class="vhl">'+vhl(d.hht,'mm')+'</td>'+x+'</tr>';
+
+  // ETAPE 3
+  h += '<tr><td colspan="'+c+'" class="etape">Etape 3 : Consolidation du rideau</td></tr>';
+  h += '<tr><td colspan="2" class="lbl">Nbre guides (= Nbre travées)</td><td colspan="2" class="val">'+vhl(d.nb_guides)+'</td>'+x+'</tr>';
+  h += '<tr><td colspan="2" class="lbl">Guide côté moteur</td><td colspan="2" class="val">'+vhl(d.guide_moteur)+'</td>'+x+'</tr>';
+  h += '<tr><td colspan="2" class="lbl">Guide intermédiaire</td><td colspan="2" class="val">'+vhl(d.guide_inter)+'</td>'+x+'</tr>';
+  h += '<tr><td colspan="2" class="lbl">Contre-guide intermédiaire</td><td colspan="2" class="val">'+vhl(d.contre_guide)+'</td>'+x+'</tr>';
+
+  // ETAPE 4
+  h += '<tr><td colspan="'+c+'" class="etape">Etape 4 : Supports de pose</td></tr>';
+  h += '<tr><td colspan="2" class="lbl">Traverse haute</td><td colspan="2" class="val center">'+sel(d.r_traverse,'Bois')+'&nbsp;'+sel(d.r_traverse,'Métal')+'&nbsp;'+sel(d.r_traverse,'Béton')+'</td>'+x+'</tr>';
+  h += '<tr><td colspan="2" class="lbl">Poteaux</td><td colspan="2" class="val center">'+sel(d.r_poteaux,'Bois')+'&nbsp;'+sel(d.r_poteaux,'Métal')+'&nbsp;'+sel(d.r_poteaux,'Béton')+'</td>'+x+'</tr>';
+  if(d.section_pot) h += '<tr><td colspan="2" class="lbl">Section poteau métal</td><td colspan="2" class="val">'+d.section_pot+'</td>'+x+'</tr>';
+  h += '<tr><td colspan="2" class="lbl">Partie basse</td><td colspan="2" class="val center">'+sel(d.r_partie_basse,'Sol')+'&nbsp;'+sel(d.r_partie_basse,'Allège')+'&nbsp;'+sel(d.r_partie_basse,'Barrière')+'</td>'+x+'</tr>';
+  h += '<tr><td colspan="2" class="lbl">Nature allège</td><td colspan="2" class="val center">'+sel(d.r_allege,'Bois')+'&nbsp;'+sel(d.r_allege,'Métal')+'&nbsp;'+sel(d.r_allege,'Béton')+'</td>'+x+'</tr>';
+  if(d.h_allege) h += '<tr><td colspan="2" class="lbl">Hauteur allège</td><td colspan="2" class="vhl">'+vhl(d.h_allege,'mm')+'</td>'+x+'</tr>';
+
+  // ETAPE 5
+  h += '<tr><td colspan="'+c+'" class="etape">Etape 5 : Protections</td></tr>';
+  h += '<tr><td colspan="2" class="lbl">Partie basse</td><td colspan="2" class="val center">'+sel(d.r_protect_bas,'Cornière PVC')+'&nbsp;'+sel(d.r_protect_bas,'Liteaux')+'&nbsp;'+sel(d.r_protect_bas,'Invitations')+'&nbsp;'+sel(d.r_protect_bas,'Rien')+'</td>'+x+'</tr>';
+  h += '<tr><td colspan="2" class="lbl">Poteaux</td><td colspan="2" class="val center">'+sel(d.r_protect_pot,'Cornière PVC')+'&nbsp;'+sel(d.r_protect_pot,'Liteaux')+'&nbsp;'+sel(d.r_protect_pot,'PPAL')+'&nbsp;'+sel(d.r_protect_pot,'Rien')+(d.r_protect_pot==='Boudin'?'&nbsp;'+sel(d.r_protect_pot,'Boudin'):'')+'</td>'+x+'</tr>';
+
+  // ETAPE 6
+  h += '<tr><td colspan="'+c+'" class="etape">Etape 6 : Finitions</td></tr>';
+  h += '<tr><td colspan="2" class="lbl">Soufflet côté moteur</td><td colspan="2" class="val center">'+sel(d.r_souff_mot_mat,'Toile')+'&nbsp;'+sel(d.r_souff_mot_mat,'Filet')+'&nbsp;'+sel(d.r_souff_mot_mat,'Aucun')+'&nbsp;|&nbsp;'+sel(d.r_souff_mot_col,'Ivoire')+'&nbsp;'+sel(d.r_souff_mot_col,'Vert foncé')+'&nbsp;'+sel(d.r_souff_mot_col,'Gris')+'</td>'+x+'</tr>';
+  h += '<tr><td colspan="2" class="lbl">Joue côté moteur</td><td colspan="2" class="val center">'+sel(d.r_joue_mot,'Ivoire')+'&nbsp;'+sel(d.r_joue_mot,'Vert foncé')+'&nbsp;'+sel(d.r_joue_mot,'Gris')+'&nbsp;'+sel(d.r_joue_mot,'Vert réséda')+'</td>'+x+'</tr>';
+  h += '<tr><td colspan="2" class="lbl">Soufflet côté opposé</td><td colspan="2" class="val center">'+sel(d.r_souff_opp_mat,'Toile')+'&nbsp;'+sel(d.r_souff_opp_mat,'Filet')+'&nbsp;'+sel(d.r_souff_opp_mat,'Aucun')+'</td>'+x+'</tr>';
+  h += '<tr><td colspan="2" class="lbl">Joue côté opposé</td><td colspan="2" class="val center">'+sel(d.r_joue_opp,'Ivoire')+'&nbsp;'+sel(d.r_joue_opp,'Vert foncé')+'&nbsp;'+sel(d.r_joue_opp,'Gris')+'&nbsp;'+sel(d.r_joue_opp,'Vert réséda')+'</td>'+x+'</tr>';
+  h += '<tr><td colspan="2" class="lbl">2 contre-soufflets</td><td colspan="2" class="val center">'+sel(d.r_contre_souff,'OUI')+'&nbsp;'+sel(d.r_contre_souff,'NON')+'&nbsp;Dim : '+sel(d.r_dim_cs,'800')+'&nbsp;'+sel(d.r_dim_cs,'Autre')+'</td>'+x+'</tr>';
+  h += '<tr><td colspan="2" class="lbl">Tuyau PVC</td><td colspan="2" class="val center">'+sel(d.r_tuyau_pvc,'OUI Ivoire')+'&nbsp;'+sel(d.r_tuyau_pvc,'OUI Gris')+'&nbsp;'+sel(d.r_tuyau_pvc,'NON')+'</td>'+x+'</tr>';
+
+  // ETAPE 7
+  h += '<tr><td colspan="'+c+'" class="etape">Etape 7 : Manœuvre</td></tr>';
+  // SOMROLLER = Électrique/Manuel, CLASSIQUE = Mono/Triphasé
+  h += '<tr><td colspan="2" class="lbl">Type</td><td colspan="2" class="val center">'+sel(d.r_manoeuvre,'Électrique')+'&nbsp;'+sel(d.r_manoeuvre,'Manuel')+'&nbsp;'+sel(d.r_manoeuvre_type,'Électrique Mono')+'&nbsp;'+sel(d.r_manoeuvre_type,'Électrique Triphasé')+'</td>'+x+'</tr>';
+  h += '<tr><td colspan="2" class="lbl">Positionnement</td><td colspan="2" class="val center">'+sel(d.r_pos_man,'G')+'&nbsp;'+sel(d.r_pos_man,'D')+'</td>'+x+'</tr>';
+  if(d.r_nb_moteurs) h += '<tr><td colspan="2" class="lbl">Nbre moteurs</td><td colspan="2" class="val center">'+sel(d.r_nb_moteurs,'1')+'&nbsp;'+sel(d.r_nb_moteurs,'2')+'</td>'+x+'</tr>';
+  if(d.manivelle) h += '<tr><td colspan="2" class="lbl">Longueur manivelle</td><td colspan="2" class="vhl">'+vhl(d.manivelle,'mm')+'</td>'+x+'</tr>';
+
+  // ETAPE 8
+  h += '<tr><td colspan="'+c+'" class="etape">Etape 8 : Commande / Automatismes</td></tr>';
+  h += '<tr><td colspan="2" class="lbl">Type commande</td><td colspan="2" class="val center">'+sel(d.r_commande,'Inverseur')+'&nbsp;'+sel(d.r_commande,'Récepteur-Émetteur')+'</td>'+x+'</tr>';
+  h += '<tr><td colspan="2" class="lbl">Position boutons</td><td colspan="2" class="val center">EXT : '+sel(d.r_pos_ext,'G')+'&nbsp;'+sel(d.r_pos_ext,'D')+'&nbsp;&nbsp;INT : '+sel(d.r_pos_int,'G')+'&nbsp;'+sel(d.r_pos_int,'D')+'</td>'+x+'</tr>';
+  h += '<tr><td colspan="2" class="lbl">Régulation T°</td><td colspan="2" class="val center">'+sel(d.r_reg_temp,'OUI')+'&nbsp;'+sel(d.r_reg_temp,'NON')+(d.nb_sondes?'&nbsp;— '+d.nb_sondes+' sonde(s)':'')+'</td>'+x+'</tr>';
+  h += '<tr><td colspan="2" class="lbl">Anémomètre</td><td colspan="2" class="val center">'+sel(d.r_anemometre,'OUI')+'&nbsp;'+sel(d.r_anemometre,'NON')+'</td>'+x+'</tr>';
+  h += '<tr><td colspan="2" class="lbl">Détecteur pluie</td><td colspan="2" class="val center">'+sel(d.r_detect_pluie,'OUI')+'&nbsp;'+sel(d.r_detect_pluie,'NON')+'</td>'+x+'</tr>';
+
+  // ETAPE 9
+  h += '<tr><td colspan="'+c+'" class="etape">Etape 9 : Rideaux</td></tr>';
+  h += '<tr><td colspan="2" class="lbl">Partie haute</td><td colspan="2" class="val center">'+sel(d.r_ph_nature,'Bâche')+'&nbsp;'+sel(d.r_ph_nature,'Filet')+'&nbsp;|&nbsp;'+sel(d.r_ph_couleur,'Ivoire')+'&nbsp;'+sel(d.r_ph_couleur,'Vert foncé')+'&nbsp;'+sel(d.r_ph_couleur,'Gris')+'&nbsp;'+sel(d.r_ph_couleur,'Incolore')+'&nbsp;'+vhl(d.ph_haut,'mm')+'</td>'+x+'</tr>';
+  h += '<tr><td colspan="2" class="lbl">Partie basse</td><td colspan="2" class="val center">'+sel(d.r_pb_nature,'Bâche')+'&nbsp;'+sel(d.r_pb_nature,'Filet')+'&nbsp;|&nbsp;'+sel(d.r_pb_couleur,'Ivoire')+'&nbsp;'+sel(d.r_pb_couleur,'Vert foncé')+'&nbsp;'+sel(d.r_pb_couleur,'Gris')+'&nbsp;'+sel(d.r_pb_couleur,'Incolore')+'&nbsp;'+vhl(d.pb_haut,'mm')+'</td>'+x+'</tr>';
+  h += '<tr><td colspan="2" class="lbl">Bavette</td><td colspan="2" class="val center">'+sel(d.r_bavette,'OUI')+'&nbsp;'+sel(d.r_bavette,'NON')+(d.bavette?'&nbsp;— hauteur : <strong>'+d.bavette+' mm</strong>':'')+'</td>'+x+'</tr>';
+
+  // PHOTOS & SCHÉMA
+  if(d.sketch_data || (d.photos && d.photos.length)){
+    h += '<tr><td colspan="'+c+'" class="etape">Schéma & Photos chantier</td></tr>';
+    if(d.sketch_data){
+      h += '<tr><td colspan="'+c+'" style="text-align:center;padding:4px;background:#fffde7">'
+        +'<img src="'+d.sketch_data+'" style="max-width:100%;max-height:120px;border:0.5px solid #ddd">'
+        +'</td></tr>';
+    }
+    if(d.photos && d.photos.length){
+      var photosCells = d.photos.map(function(p){return '<td style="padding:3px;text-align:center"><img src="'+p+'" style="max-width:100%;max-height:80px"></td>';}).join('');
+      h += '<tr>'+photosCells+'</tr>';
+    }
+  }
+
+  return h;
+}
+
+// =========================================================
+// MAIL
+// =========================================================
+function buildMailBody(d){
+  var lines=['FEUILLE DE PRISE DE MESURES — '+d.produit_type.toUpperCase(),'Date : '+d.date+' | Affaire : '+(d.affaire||'—')+' | Client : '+(d.client||'—')+' | Métreur : '+(d.metreur||'—'),''];
+  Object.keys(d).forEach(function(k){
+    if(['id','produit_type','date','affaire','client','metreur'].indexOf(k)>-1)return;
+    if(d[k]===''||d[k]===false||d[k]===null||d[k]===undefined)return;
+    var label = k.replace(/^r_/,'').replace(/_/g,' ');
+    lines.push(label+' : '+(d[k]===true?'OUI':d[k]));
+  });
+  return lines.join('\n');
+}
+
+function sendMail(){
+  var d=collectForm();
+  var labels={bvr:'BVR',somogliss:'SOMOGLISS',somroller:'SOMROLLER',classique:'Classique'};
+  var subj='Prise de mesures '+labels[d.produit_type]+' — '+(d.affaire||'?')+' — '+(d.client||'?');
+  var body = buildMailBody(d);
+  var prep = collectPrepData();
+  body += buildPrepMailBody(prep, d);
+  window.location.href='mailto:?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
+}
+function sendMailFromDetail(){
+  if(!curDetail)return;
+  var d=curDetail;
+  var labels={bvr:'BVR',somogliss:'SOMOGLISS',somroller:'SOMROLLER',classique:'Classique'};
+  var subj='Prise de mesures '+labels[d.produit_type]+' — '+(d.affaire||'?')+' — '+(d.client||'?');
+  window.location.href='mailto:?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(buildMailBody(d));
+}
+
+// =========================================================
+// SAUVEGARDE / HISTORIQUE
+// =========================================================
+function saveForm(){
+  var d=collectForm();
+  if(!d.affaire&&!d.client){showToast('Renseignez le n° affaire ou le client');return;}
+  histData.unshift(d);
+  localStorage.setItem('eurosom_history',JSON.stringify(histData));
+  updateBadge();
+  showToast('✓ Feuille sauvegardée');
+}
+
+function resetForm(){
+  if(!confirm('Réinitialiser le formulaire ?'))return;
+  document.querySelectorAll('#form-content input[type=text],#form-content input[type=number],#form-content select,#form-content textarea').forEach(function(e){e.value='';});
+  document.querySelectorAll('#form-content input[type=radio],#form-content input[type=checkbox]').forEach(function(e){e.checked=false;});
+  prepChecked = {};
+  prepCustomTasks = [];
+  photoBase = null;
+  removePhoto();
+  renderPrepAccordion(currentProduit);
+  setToday();
+  showToast('Formulaire réinitialisé');
+}
+
+function renderHistory(){
+  var c=document.getElementById('history-list');
+  if(!histData.length){
+    c.innerHTML='<div class="empty"><div class="empty-icon">📋</div><p style="font-size:14px">Aucune feuille sauvegardée</p></div>';return;
+  }
+  var labels={bvr:'BVR',somogliss:'SOMOGLISS',somroller:'SOMROLLER',classique:'Classique'};
+  c.innerHTML=histData.map(function(d,i){
+    var pt=d.produit_type||'bvr';
+    return '<div class="history-item" onclick="showDetail('+i+')">'
+      +'<div class="hi-hd"><span class="hi-ref">'+(d.client||'Client ?')+' — '+(d.affaire||'N° ?')+'</span>'
+      +'<span class="badge '+pt+'">'+labels[pt]+'</span></div>'
+      +'<div class="hi-meta"><span>📅 '+d.date+'</span>'+(d.metreur?'<span>👤 '+d.metreur+'</span>':'')+(d.lji?'<span>LJI '+d.lji+' mm</span>':'')+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+function showDetail(i){
+  curDetail=histData[i];var d=curDetail;
+  var labels={bvr:'BVR',somogliss:'SOMOGLISS',somroller:'SOMROLLER',classique:'Classique'};
+  var rows=[['Produit',labels[d.produit_type]],['Date',d.date],['N° affaire',d.affaire],['Client',d.client],['Métreur',d.metreur]];
+  if(d.lji)rows.push(['LJI',d.lji+' mm']);
+  if(d.hst)rows.push(['HST',d.hst+' mm']);
+  if(d.hht)rows.push(['HHT',d.hht+' mm']);
+  if(d.coloris)rows.push(['Coloris',d.coloris]);
+  document.getElementById('detail-content').innerHTML=rows.filter(function(r){return r[1];}).map(function(r){
+    return '<div class="dr"><span class="dl">'+r[0]+'</span><span class="dv">'+r[1]+'</span></div>';
+  }).join('');
+  document.getElementById('detail-overlay').classList.add('open');
+}
+
+function closeDetail(){document.getElementById('detail-overlay').classList.remove('open');curDetail=null;}
+
+function loadToForm(){
+  if(!curDetail)return;
+  selectProduit(curDetail.produit_type);
+  setTimeout(function(){
+    var d=curDetail;
+    ['f-date','f-affaire','f-client','f-metreur','f-lji','f-hst','f-hht','f-ldc','f-coloris',
+     'f-haut-filet','f-bas-bache','f-bavette','f-comment1','f-couleur-capot','f-produit',
+     'f-lt','f-hji','f-h-pose','f-travees','f-larg-travees','f-nb-guides','f-guide-moteur',
+     'f-guide-inter','f-contre-guide','f-section-pot','f-h-allege','f-ph-haut','f-pb-haut',
+     'f-manivelle','f-nb-sondes','f-pos-autre'
+    ].forEach(function(id){
+      var k=id.replace('f-','').replace(/-/g,'_');
+      var el=document.getElementById(id);
+      if(el&&d[k]!==undefined)el.value=d[k];
+    });
+    Object.keys(d).forEach(function(k){
+      if(k.startsWith('r_')){
+        var name=k.slice(2).replace(/_/g,'-');
+        var el=document.querySelector('#form-content input[name="'+name+'"][value="'+d[k]+'"]');
+        if(el)el.checked=true;
+      }
+      if(['acc_barrage','acc_palpeuse','acc_urgence','acc_boucle','acc_feu'].indexOf(k)>-1){
+        var el2=document.getElementById(k.replace(/_/g,'-'));
+        if(el2)el2.checked=!!d[k];
+      }
+    });
+    closeDetail();
+    photosList = d.photos ? d.photos.slice() : [];
+    renderPhotos();
+    showToast('Feuille chargée');
+  },200);
+}
+
+// =========================================================
+// LOGIQUE CONDITIONNELLE FORMULAIRE
+// =========================================================
+function show(id, visible){
+  var el = document.getElementById(id);
+  if(el) el.style.display = visible ? '' : 'none';
+}
+function radioVal(name){
+  var el = document.querySelector('#form-content input[name="'+name+'"]:checked');
+  return el ? el.value : '';
+}
+
+function onFormChange(){
+  // 1. NACELLE → tâche prépa client selon location
+  var nac = radioVal('nacelle');
+  var loc = radioVal('loc-nacelle');
+  var cats = PREP_TASKS[currentProduit] || [];
+  var prepUpdated = false;
+  // Déterminer quelle tâche nacelle cocher selon le cas
+  // - NON ou vide → rien
+  // - À faire → rien (Eurosom s'en charge)
+  // - Faite client → "louer_nacelle"
+  // - Matériel client → "engin_levage"
+  var nac_louer = (nac && nac !== 'NON' && loc === 'Faite client');
+  var nac_engin  = (nac && nac !== 'NON' && loc === 'Matériel client');
+  cats.forEach(function(cat, ci){
+    cat.tasks.forEach(function(t){
+      if(t.id === 'nacelle_cmd'){
+        var shouldCheck = nac_louer;
+        if(shouldCheck !== !!prepChecked[ci+'_'+t.id]){
+          prepChecked[ci+'_'+t.id] = shouldCheck;
+          prepUpdated = true;
+        }
+      }
+      if(t.id === 'nacelle_engin'){
+        var shouldCheck2 = nac_engin;
+        if(shouldCheck2 !== !!prepChecked[ci+'_'+t.id]){
+          prepChecked[ci+'_'+t.id] = shouldCheck2;
+          prepUpdated = true;
+        }
+      }
+    });
+  });
+  if(prepUpdated) renderPrepAccordion(currentProduit);
+
+  // 2. ALLÈGE → Nature allège + Hauteur allège
+  var pb = radioVal('partie-basse');
+  var isAllege = pb === 'Allège';
+  show('field-allege-sr', isAllege);
+  show('field-allege-cl', isAllege);
+  show('field-h-allege-cl', isAllege);
+
+  // 3. SOUFFLET CÔTÉ MOTEUR OUI → matière ; matière Toile/Filet → couleur
+  var smyn = radioVal('souff-mot-yn');
+  var showSouffMotMat = smyn === 'OUI';
+  show('field-souff-mot-mat-sr', showSouffMotMat);
+  show('field-souff-mot-mat-cl', showSouffMotMat);
+  show('field-souff-mot-col-sr', showSouffMotMat);
+  show('field-souff-mot-col-cl', showSouffMotMat);
+
+  // 4. JOUE CÔTÉ MOTEUR OUI → couleur
+  var jmyn = radioVal('joue-mot-yn');
+  var showJoueMot = jmyn === 'OUI';
+  show('field-joue-mot-col-sr', showJoueMot);
+  show('field-joue-mot-col-cl', showJoueMot);
+
+  // 5. SOUFFLET CÔTÉ OPPOSÉ OUI → matière ; matière Toile/Filet → couleur
+  var soyn = radioVal('souff-opp-yn');
+  var showSouffOppMat = soyn === 'OUI';
+  show('field-souff-opp-mat-sr', showSouffOppMat);
+  show('field-souff-opp-mat-cl', showSouffOppMat);
+  show('field-souff-opp-col-sr', showSouffOppMat);
+  show('field-souff-opp-col-cl', showSouffOppMat);
+
+  // 6. JOUE CÔTÉ OPPOSÉ OUI → couleur
+  var joyn = radioVal('joue-opp-yn');
+  var showJoueOpp = joyn === 'OUI';
+  show('field-joue-opp-col-sr', showJoueOpp);
+  show('field-joue-opp-col-cl', showJoueOpp);
+
+  // 7. NOMBRE DE MOTEURS → 1 moteur : positionnement simple ; 2 moteurs : commande groupée + pos bas + pos haut
+  var nbMot = radioVal('nb-moteurs');
+  var is1mot = nbMot === '1';
+  var is2mot = nbMot === '2';
+  show('field-pos-mot-1-cl', is1mot);
+  show('field-cmd-groupee-cl', is2mot);
+  show('field-pos-mot-bas-cl', is2mot);
+  show('field-pos-mot-haut-cl', is2mot);
+
+  // 8. RÉGULATION T° OUI → nombre de sondes
+  var rt = radioVal('reg-temp');
+  var showSondes = rt === 'OUI';
+  show('field-nb-sondes-sr', showSondes);
+  show('field-nb-sondes-cl', showSondes);
+}
+
+
+
+var PREP_TASKS = {
+  bvr:[
+    {cat:'🏗️ Accès & Zone', tasks:[
+      {id:'degage', label:'Dégager la zone de pose', desc:'Libérer sur 2 m de chaque côté — retirer matériel, véhicules, animaux'},
+      {id:'acces', label:'Assurer l\'accès camion', desc:'Signaler restrictions de hauteur ou largeur'},
+      {id:'contact', label:'Désigner un responsable sur place', desc:'Disponible pour réceptionner les travaux'},
+    ]},
+    {cat:'⚡ Électricité', tasks:[
+      {id:'elec220', label:'Prévoir prise 220V à moins de 10 m', desc:'Vérifier la conformité de l\'installation'},
+      {id:'elec_cable', label:'Câble d\'alimentation posé jusqu\'au moteur', desc:'Si manœuvre électrique'},
+    ]},
+    {cat:'🔩 Structure & Supports', tasks:[
+      {id:'traverse', label:'Vérifier la traverse haute', desc:'Accessible, solide, prévoir fixations si métal'},
+      {id:'coulisses', label:'Vérifier alignement des montants', desc:'Supports plans et d\'aplomb'},
+      {id:'capot', label:'Préparer l\'emplacement du capot', desc:'Si capot prévu'},
+    ]},
+    {cat:'🚜 Nacelle', tasks:[
+      {id:'nacelle_cmd', label:'Louer une nacelle', desc:'Confirmer la disponibilité pour la date de pose'},
+      {id:'nacelle_engin', label:'Prévoir engin de levage', desc:'Matériel client à prévoir sur place le jour de la pose'},
+      {id:'nacelle_place', label:'Prévoir espace de manœuvre au sol', desc:'Dégagement suffisant pour la circulation'},
+    ]},
+  ],
+  somogliss:[
+    {cat:'🏗️ Accès & Zone', tasks:[
+      {id:'degage', label:'Dégager la zone de pose', desc:'Libérer sur 2 m de chaque côté'},
+      {id:'acces', label:'Assurer l\'accès camion', desc:'Signaler restrictions'},
+      {id:'contact', label:'Désigner un responsable sur place', desc:''},
+    ]},
+    {cat:'⚡ Électricité', tasks:[
+      {id:'elec220', label:'Prévoir prise 220V à moins de 10 m', desc:''},
+    ]},
+    {cat:'🔩 Structure', tasks:[
+      {id:'rail', label:'Vérifier planéité traverse haute (rail)', desc:'Sur toute la longueur'},
+      {id:'barriere', label:'Positionner les barrières de sécurité', desc:'Espace pour partie fixe et coulissement'},
+      {id:'sol', label:'Vérifier planéité du sol', desc:'Signaler tout dénivelé'},
+    ]},
+    {cat:'🚜 Nacelle', tasks:[
+      {id:'nacelle_cmd', label:'Louer une nacelle', desc:'Confirmer disponibilité'},
+      {id:'nacelle_engin', label:'Prévoir engin de levage', desc:'Matériel client à prévoir sur place'},
+    ]},
+  ],
+  somroller:[
+    {cat:'🏗️ Accès & Zone', tasks:[
+      {id:'degage', label:'Dégager la zone de pose', desc:'Libérer sur 2 m de chaque côté'},
+      {id:'acces', label:'Assurer l\'accès camion', desc:''},
+      {id:'contact', label:'Désigner un responsable sur place', desc:''},
+    ]},
+    {cat:'⚡ Électricité', tasks:[
+      {id:'elec', label:'Prévoir alimentation électrique', desc:'220V ou triphasé selon config, à moins de 10 m'},
+      {id:'elec_cable', label:'Câble moteur posé jusqu\'à l\'emplacement', desc:''},
+    ]},
+    {cat:'🔩 Structure', tasks:[
+      {id:'traverse', label:'Vérifier traverse haute (horizontale et solide)', desc:'Supporte axe + rideau'},
+      {id:'poteaux', label:'Poteaux d\'aplomb et espacés selon plan', desc:'Platines de fixation si métal'},
+      {id:'guides', label:'Marquer emplacements des guides', desc:'Au sol et sur traverse haute'},
+    ]},
+    {cat:'🚜 Nacelle', tasks:[
+      {id:'nacelle_cmd', label:'Louer une nacelle', desc:'Confirmer disponibilité'},
+      {id:'nacelle_engin', label:'Prévoir engin de levage', desc:'Matériel client à prévoir sur place'},
+      {id:'nacelle_place', label:'Espace de manœuvre nacelle', desc:''},
+    ]},
+  ],
+  classique:[
+    {cat:'🏗️ Accès & Zone', tasks:[
+      {id:'degage', label:'Dégager la zone de pose', desc:'Libérer sur 2 m de chaque côté'},
+      {id:'acces', label:'Assurer l\'accès camion', desc:''},
+      {id:'contact', label:'Désigner un responsable sur place', desc:''},
+    ]},
+    {cat:'⚡ Électricité', tasks:[
+      {id:'elec_cable', label:'Câble moteur posé (220V ou triphasé)', desc:'Jusqu\'à l\'emplacement moteur'},
+    ]},
+    {cat:'🔩 Structure', tasks:[
+      {id:'traverse', label:'Traverse haute horizontale et solide', desc:'Sur toute la largeur'},
+      {id:'poteaux', label:'Poteaux d\'aplomb et en place', desc:'Avant l\'intervention'},
+    ]},
+    {cat:'🚜 Nacelle', tasks:[
+      {id:'nacelle_cmd', label:'Louer une nacelle', desc:'Confirmer disponibilité'},
+      {id:'nacelle_engin', label:'Prévoir engin de levage', desc:'Matériel client à prévoir sur place'},
+    ]},
+  ]
+};
+
+// État des cases cochées : {catIndex_taskId: true/false}
+var prepChecked = {};
+var prepCustomTasks = [];
+// Photo annotable
+var photoBase = null; // image originale base64
+var sketchState = {tool:'pen', color:'#e74c3c', size:3, drawing:false, lastX:0, lastY:0};
+
+function initPrepTasks(code){
+  prepChecked = {};
+  prepCustomTasks = [];
+  photoBase = null;
+  renderPrepAccordion(code);
+}
+
+function renderPrepAccordion(code){
+  var cats = PREP_TASKS[code] || PREP_TASKS['bvr'];
+  var html = '';
+  cats.forEach(function(cat, ci){
+    var checkedCount = cat.tasks.filter(function(t){ return prepChecked[ci+'_'+t.id]; }).length;
+    html += '<div class="acc-section">';
+    html += '<div class="acc-header" onclick="toggleAcc('+ci+')">'
+      +'<div class="acc-title">'+cat.cat
+      +'<span class="acc-count'+(checkedCount?' visible':'')+'" id="acc-cnt-'+ci+'">'+checkedCount+'</span>'
+      +'</div>'
+      +'<span class="acc-arrow'+(checkedCount?' open':'')+'" id="acc-arr-'+ci+'">›</span>'
+      +'</div>';
+    html += '<div class="acc-body'+(checkedCount?' open':'')+'" id="acc-body-'+ci+'">';
+    cat.tasks.forEach(function(t){
+      var chk = prepChecked[ci+'_'+t.id] ? ' checked' : '';
+      html += '<div class="acc-task'+chk+'" onclick="toggleTask('+ci+',\''+t.id+'\')">'
+        +'<input type="checkbox"'+(chk?' checked':'')+' readonly>'
+        +'<div class="acc-task-text">'
+        +'<div class="acc-task-label">'+t.label+'</div>'
+        +(t.desc?'<div class="acc-task-desc">'+t.desc+'</div>':'')
+        +'</div></div>';
+    });
+    html += '</div></div>';
+  });
+  var el = document.getElementById('prep-accordion');
+  if(el) el.innerHTML = html;
+  renderPrepCustomList();
+}
+
+function toggleAcc(ci){
+  var body = document.getElementById('acc-body-'+ci);
+  var arr = document.getElementById('acc-arr-'+ci);
+  if(!body) return;
+  body.classList.toggle('open');
+  arr.classList.toggle('open');
+}
+
+function toggleTask(ci, tid){
+  var key = ci+'_'+tid;
+  prepChecked[key] = !prepChecked[key];
+  renderPrepAccordion(currentProduit);
+}
+
+function renderPrepCustomList(){
+  var el = document.getElementById('prep-custom-list');
+  if(!el) return;
+  el.innerHTML = prepCustomTasks.map(function(t,i){
+    var chk = t.checked ? ' checked' : '';
+    return '<div class="acc-task'+chk+'" onclick="toggleCustomTask('+i+')" style="border-bottom:1px solid #faf0e8">'
+      +'<input type="checkbox"'+(t.checked?' checked':'')+' readonly>'
+      +'<div class="acc-task-text"><div class="acc-task-label">'+t.label+'</div></div>'
+      +'<button class="task-delete" onclick="event.stopPropagation();removePrepTask('+i+')">&#10005;</button>'
+      +'</div>';
+  }).join('');
+}
+
+function toggleCustomTask(i){
+  prepCustomTasks[i].checked = !prepCustomTasks[i].checked;
+  renderPrepCustomList();
+}
+
+function addPrepTask(){
+  var input = document.getElementById('prep-custom-input');
+  if(!input || !input.value.trim()) return;
+  prepCustomTasks.push({label:input.value.trim(), checked:true});
+  input.value = '';
+  renderPrepCustomList();
+}
+
+function removePrepTask(i){
+  prepCustomTasks.splice(i,1);
+  renderPrepCustomList();
+}
+
+// ---- PHOTO ANNOTABLE ----
+function initPhotoCanvas(){
+  var canvas = document.getElementById('sketch-canvas');
+  if(!canvas || !photoBase) return;
+
+  var img = new Image();
+  img.onload = function(){
+    var zone = document.getElementById('photo-draw-zone');
+    var w = zone ? zone.clientWidth : 480;
+    var ratio = img.naturalHeight / img.naturalWidth;
+    canvas.width = w;
+    canvas.height = Math.round(w * ratio);
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    canvas.style.display = 'block';
+    document.getElementById('photo-placeholder').style.display = 'none';
+    document.getElementById('sketch-tools').style.display = 'flex';
+    attachCanvasEvents(canvas);
+  };
+  img.src = photoBase;
+}
+
+function attachCanvasEvents(canvas){
+  // Clone pour repartir proprement
+  var nc = canvas.cloneNode(true);
+  canvas.parentNode.replaceChild(nc, canvas);
+  var ctx = nc.getContext('2d');
+  var img = new Image();
+  img.onload = function(){ ctx.drawImage(img,0,0,nc.width,nc.height); };
+  img.src = photoBase;
+
+  function getPos(e){
+    var r = nc.getBoundingClientRect();
+    var sx = nc.width/r.width, sy = nc.height/r.height;
+    var src = e.touches ? e.touches[0] : e;
+    return {x:(src.clientX-r.left)*sx, y:(src.clientY-r.top)*sy};
+  }
+  function start(e){ e.preventDefault(); sketchState.drawing=true; var p=getPos(e); sketchState.lastX=p.x; sketchState.lastY=p.y; }
+  function move(e){
+    e.preventDefault();
+    if(!sketchState.drawing) return;
+    var p=getPos(e);
+    ctx.beginPath(); ctx.moveTo(sketchState.lastX,sketchState.lastY); ctx.lineTo(p.x,p.y);
+    ctx.lineWidth=sketchState.size; ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.strokeStyle=sketchState.tool==='eraser'?'rgba(255,255,255,0.9)':sketchState.color;
+    ctx.globalCompositeOperation=sketchState.tool==='eraser'?'destination-out':'source-over';
+    ctx.stroke();
+    sketchState.lastX=p.x; sketchState.lastY=p.y;
+  }
+  function end(){ sketchState.drawing=false; ctx.globalCompositeOperation='source-over'; }
+  nc.addEventListener('mousedown',start); nc.addEventListener('mousemove',move); nc.addEventListener('mouseup',end); nc.addEventListener('mouseleave',end);
+  nc.addEventListener('touchstart',start,{passive:false}); nc.addEventListener('touchmove',move,{passive:false}); nc.addEventListener('touchend',end,{passive:false});
+}
+
+function clearAnnotations(){
+  var canvas = document.getElementById('sketch-canvas');
+  if(!canvas || !photoBase) return;
+  var ctx = canvas.getContext('2d');
+  var img = new Image();
+  img.onload = function(){ ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0,canvas.width,canvas.height); };
+  img.src = photoBase;
+}
+
+function removePhoto(){
+  photoBase = null;
+  var canvas = document.getElementById('sketch-canvas');
+  if(canvas){ canvas.style.display='none'; canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height); }
+  var ph = document.getElementById('photo-placeholder');
+  if(ph) ph.style.display='block';
+  var tools = document.getElementById('sketch-tools');
+  if(tools) tools.style.display='none';
+}
+
+function getSketchData(){
+  var canvas = document.getElementById('sketch-canvas');
+  if(!canvas || canvas.style.display==='none' || !photoBase) return null;
+  return canvas.toDataURL('image/jpeg', 0.85);
+}
+
+function collectPrepData(){
+  var cats = PREP_TASKS[currentProduit] || [];
+  var checkedTasks = [];
+  cats.forEach(function(cat, ci){
+    cat.tasks.forEach(function(t){
+      if(prepChecked[ci+'_'+t.id]) checkedTasks.push({label:t.label, cat:cat.cat.replace(/[^\w\s]/g,'').trim()});
+    });
+  });
+  prepCustomTasks.forEach(function(t){ if(t.checked) checkedTasks.push({label:t.label, cat:'Autres'}); });
+  return {
+    tel: gv('prep-tel'),
+    email: gv('prep-email'),
+    remarques: gv('prep-remarques'),
+    tasks: checkedTasks,
+    photo: getSketchData()
+  };
+}
+
+
+function buildPrepPreview(prep, client, commercial, produit){
+  if(!prep || !prep.tasks || !prep.tasks.length) return '';
+  var h = '<tr><td colspan="6" style="height:6px;border:none;background:#ebebeb;padding:0"></td></tr>';
+  h += '<tr><td colspan="6" style="font-size:11px;font-weight:700;padding:5px 6px;background:#fff3e0;border:1px solid #e0a060;color:#d35400">&#128203; PRÉPARATION CLIENT — Tâches à effectuer avant la pose</td></tr>';
+  h += '<tr>'
+    +'<td colspan="3" style="font-size:8.5px;padding:3px 6px;border:0.5px solid #ddd">Client : <strong>'+(client||'—')+'</strong>&nbsp;&nbsp;Tél : '+(prep.tel||'—')+'</td>'
+    +'<td colspan="3" style="font-size:8.5px;padding:3px 6px;border:0.5px solid #ddd">Commercial : '+(commercial||'—')+'</td>'
+    +'</tr>';
+  // Grouper par catégorie
+  var bycat = {};
+  prep.tasks.forEach(function(t){
+    var c = t.cat||'Autres';
+    if(!bycat[c]) bycat[c]=[];
+    bycat[c].push(t);
+  });
+  Object.keys(bycat).forEach(function(cat){
+    h += '<tr><td colspan="5" style="padding:3px 6px;background:#fdf3e8;border:0.5px solid #e0a060;font-size:8px;font-weight:700;color:#d35400">'+cat+'</td>'
+      +'<td style="padding:3px 6px;background:#fdf3e8;border:0.5px solid #e0a060;text-align:center;font-size:8px;font-weight:700">&#9744; Fait</td></tr>';
+    bycat[cat].forEach(function(t){
+      h += '<tr>'
+        +'<td colspan="5" style="padding:3px 6px 3px 14px;border:0.5px solid #eee;font-size:8.5px">• '+t.label+'</td>'
+        +'<td style="padding:3px 6px;border:0.5px solid #eee;text-align:center;font-size:13px">&#9744;</td>'
+        +'</tr>';
+    });
+  });
+  if(prep.remarques){
+    h += '<tr><td colspan="6" style="padding:4px 6px;border:0.5px solid #ddd;font-size:8px;background:#fffde7">Remarques : '+prep.remarques+'</td></tr>';
+  }
+  // Photo annotée
+  if(prep.photo){
+    h += '<tr><td colspan="6" style="padding:6px;border:0.5px solid #ddd;text-align:center;background:#fafafa">'
+      +'<div style="font-size:8px;font-weight:700;color:#888;margin-bottom:4px;text-align:left">Photo chantier annotée :</div>'
+      +'<img src="'+prep.photo+'" style="max-width:100%;max-height:200px;border-radius:4px;border:0.5px solid #ddd">'
+      +'</td></tr>';
+  }
+  // Signatures
+  h += '<tr><td colspan="3" style="padding:18px 6px 4px;border:none;text-align:center"><div style="border-top:1px solid #555;padding-top:3px;font-size:7.5px;color:#888">Signature client</div></td>'
+    +'<td colspan="3" style="padding:18px 6px 4px;border:none;text-align:center"><div style="border-top:1px solid #555;padding-top:3px;font-size:7.5px;color:#888">Signature commercial</div></td></tr>';
+  return h;
+}
+
+function buildPrepMailBody(prep, d){
+  if(!prep || !prep.tasks || !prep.tasks.length) return '';
+  var lines = ['', '--- PRÉPARATION CLIENT ---', 'Tâches à réaliser avant la pose :'];
+  var bycat = {};
+  prep.tasks.forEach(function(t){ var c=t.cat||'Autres'; if(!bycat[c])bycat[c]=[]; bycat[c].push(t); });
+  Object.keys(bycat).forEach(function(cat){
+    lines.push('\n'+cat+' :');
+    bycat[cat].forEach(function(t){ lines.push('  ☐ '+t.label); });
+  });
+  if(prep.remarques) lines.push('\nRemarques : '+prep.remarques);
+  return lines.join('\n');
+}
+
+function buildPrepSMS(prep, produit, client){
+  if(!prep || !prep.tasks || !prep.tasks.length) return '';
+  var lines = ['Bonjour,','Préparations nécessaires avant la pose de votre '+produit+' :'];
+  prep.tasks.forEach(function(t){ lines.push('• '+t.label); });
+  if(prep.remarques) lines.push('Note : '+prep.remarques);
+  lines.push('Merci — EUROSOM');
+  return lines.join('\n');
+}
+
+function sendPrepSMS(){
+  var prep = collectPrepData();
+  var d = collectForm();
+  if(!prep.tel){showToast('Renseignez le téléphone client dans "Préparation client"');return;}
+  var tel = prep.tel.replace(/\s/g,'');
+  var labels={bvr:'BVR',somogliss:'SOMOGLISS',somroller:'SOMROLLER',classique:'Classique'};
+  window.location.href='sms:'+tel+'?body='+encodeURIComponent(buildPrepSMS(prep, labels[currentProduit], d.client));
+}
+
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800);}
+
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800);}
+
+updateBadge();
+</script>
+</body>
+</html>
+    {id:'elec',     label:'Prévoir l\'alimentation électrique', desc:'Prise 220V à moins de 10 m. Vérifier la conformité de l\'installation.'},
+    {id:'capot',    label:'Préparer l\'emplacement du capot', desc:'Traverse haute accessible et solide. Prévoir fixations si support métallique.'},
+    {id:'coulisses',label:'Préparer coulisses et supports',  desc:'Vérifier alignement des montants. Supports plans et d\'aplomb.'},
+    {id:'nacelle',  label:'Organiser la nacelle si nécessaire', desc:'Commander et confirmer la disponibilité pour la date de pose.'},
+    {id:'contact',  label:'Désigner un responsable sur place', desc:'Une personne disponible le jour de la pose pour réceptionner les travaux.'},
+  ],
+  somogliss:[
+    {id:'dégager',  label:'Dégager la zone de pose',        desc:'Libérer la zone sur 2 m de chaque côté.'},
+    {id:'acces',    label:'Assurer l\'accès au chantier',    desc:'Accès camion. Signaler restrictions de hauteur/largeur.'},
+    {id:'elec',     label:'Prévoir l\'alimentation électrique', desc:'Prise 220V à moins de 10 m.'},
+    {id:'rail',     label:'Vérifier la traverse haute pour le rail', desc:'Planéité sur toute la longueur. Doit supporter rail + rideau.'},
+    {id:'barriere', label:'Positionner les barrières de sécurité', desc:'Prévoir l\'espace pour la partie fixe et le coulissement ouvert.'},
+    {id:'sol',      label:'Vérifier la planéité du sol',    desc:'Sol plan sous toute la longueur. Signaler tout dénivelé.'},
+    {id:'contact',  label:'Désigner un responsable sur place', desc:'Une personne disponible le jour de la pose.'},
+  ],
+  somroller:[
+    {id:'dégager',  label:'Dégager la zone de pose',        desc:'Libérer la zone sur 2 m de chaque côté.'},
+    {id:'acces',    label:'Assurer l\'accès au chantier',    desc:'Accès camion. Signaler restrictions.'},
+    {id:'elec',     label:'Prévoir l\'alimentation électrique', desc:'Prise 220V/triphasé selon config, à moins de 10 m.'},
+    {id:'traverse', label:'Vérifier la traverse haute',     desc:'Horizontale et solide pour supporter l\'axe et le rideau.'},
+    {id:'poteaux',  label:'Préparer les poteaux',           desc:'D\'aplomb et espacés selon plan. Prévoir platines si métal.'},
+    {id:'guides',   label:'Préparer les points de fixation des guides', desc:'Marquer emplacements guides au sol et en haut.'},
+    {id:'nacelle',  label:'Organiser la nacelle',           desc:'Commander et confirmer la disponibilité pour la date de pose.'},
+    {id:'contact',  label:'Désigner un responsable sur place', desc:'Une personne disponible le jour de la pose.'},
+  ],
+  classique:[
+    {id:'dégager',  label:'Dégager la zone de pose',        desc:'Libérer la zone sur 2 m de chaque côté.'},
+    {id:'acces',    label:'Assurer l\'accès au chantier',    desc:'Accès camion. Signaler restrictions.'},
+    {id:'elec',     label:'Prévoir le câblage électrique moteur', desc:'220V ou triphasé selon config. Câble posé jusqu\'à l\'emplacement moteur.'},
+    {id:'traverse', label:'Vérifier la traverse haute',     desc:'Horizontale et solide sur toute la largeur.'},
+    {id:'poteaux',  label:'Préparer les poteaux',           desc:'D\'aplomb et en place avant l\'intervention.'},
+    {id:'nacelle',  label:'Organiser la nacelle',           desc:'Commander et confirmer la disponibilité pour la date de pose.'},
+    {id:'contact',  label:'Désigner un responsable sur place', desc:'Une personne disponible le jour de la pose.'},
+  ]
+};
+
+var prepCustomTasks = [];
+
+function initPrepTasks(code){
+  prepCustomTasks = [];
+  renderPrepTasks(code);
+}
+
+function renderPrepTasks(code){
+  var tasks = PREP_TASKS[code] || PREP_TASKS['bvr'];
+  var html = tasks.map(function(t){
+    return '<div class="task-row">'
+      +'<div class="task-left">'
+      +'<div class="task-label">'+t.label+'</div>'
+      +'<div class="task-desc">'+t.desc+'</div>'
+      +'</div>'
+      +'<div class="task-date"><label>Avant le</label>'
+      +'<input type="text" id="ptask-'+t.id+'" placeholder="jj/mm" class="task-date-input">'
+      +'</div></div>';
+  }).join('');
+  // Tâches custom
+  html += prepCustomTasks.map(function(t,i){
+    return '<div class="task-row">'
+      +'<div class="task-left"><div class="task-label">'+t+'</div></div>'
+      +'<div class="task-date" style="flex-direction:row;align-items:center;gap:6px">'
+      +'<input type="text" id="pctask-'+i+'" placeholder="jj/mm" style="width:90px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px">'
+      +'<button class="task-delete" onclick="removePrepTask('+i+')">&#10005;</button>'
+      +'</div></div>';
+  }).join('');
+  var el = document.getElementById('prep-tasks-list');
+  if(el) el.innerHTML = html;
+}
+
+function addPrepTask(){
+  var input = document.getElementById('prep-custom-input');
+  if(!input || !input.value.trim()) return;
+  prepCustomTasks.push(input.value.trim());
+  input.value = '';
+  renderPrepTasks(currentProduit);
+}
+
+function removePrepTask(i){
+  prepCustomTasks.splice(i,1);
+  renderPrepTasks(currentProduit);
+}
+
+function collectPrepData(){
+  var tasks = PREP_TASKS[currentProduit] || [];
+  var result = [];
+  tasks.forEach(function(t){
+    var el = document.getElementById('ptask-'+t.id);
+    result.push({label:t.label, desc:t.desc, date:el?el.value:''});
+  });
+  prepCustomTasks.forEach(function(t,i){
+    var el = document.getElementById('pctask-'+i);
+    result.push({label:t, desc:'', date:el?el.value:''});
+  });
+  return {
+    date_pose: gv('prep-date-pose'),
+    tel: gv('prep-tel'),
+    email: gv('prep-email'),
+    remarques: gv('prep-remarques'),
+    tasks: result
+  };
+}
+
+function buildPrepPreview(prep, client, commercial, produit){
+  if(!prep || !prep.tasks || !prep.tasks.length) return '';
+  var h = '<tr><td colspan="6" style="height:6px;border:none;background:#ebebeb;padding:0"></td></tr>';
+  h += '<tr><td colspan="6" style="font-size:11px;font-weight:700;padding:5px 6px;background:#fff3e0;border:1px solid #e0a060;color:#d35400">&#128203; PRÉPARATION CLIENT — À réaliser avant la pose</td></tr>';
+  h += '<tr>'
+    +'<td colspan="2" style="font-size:8.5px;padding:3px 6px;border:0.5px solid #ddd">Client : <strong>'+(client||'—')+'</strong></td>'
+    +'<td colspan="2" style="font-size:8.5px;padding:3px 6px;border:0.5px solid #ddd">Date de pose : <strong style="color:#d35400">'+(prep.date_pose||'—')+'</strong></td>'
+    +'<td colspan="2" style="font-size:8.5px;padding:3px 6px;border:0.5px solid #ddd">Tél : '+(prep.tel||'—')+'</td>'
+    +'</tr>';
+  h += '<tr>'
+    +'<th colspan="4" style="padding:3px 6px;background:#f5f5f5;border:0.5px solid #bbb;text-align:left;font-size:8px">Tâche à effectuer</th>'
+    +'<th style="padding:3px 6px;background:#f5f5f5;border:0.5px solid #bbb;text-align:center;font-size:8px">Avant le</th>'
+    +'<th style="padding:3px 6px;background:#f5f5f5;border:0.5px solid #bbb;text-align:center;font-size:8px">&#9744; Fait</th>'
+    +'</tr>';
+  prep.tasks.forEach(function(t){
+    h += '<tr>'
+      +'<td colspan="4" style="padding:3px 6px;border:0.5px solid #ddd;font-size:8px;vertical-align:top">'
+      +'<strong>'+t.label+'</strong>'+(t.desc?'<br><span style="color:#888;font-size:7px">'+t.desc+'</span>':'')
+      +'</td>'
+      +'<td style="padding:3px 6px;border:0.5px solid #ddd;text-align:center;font-weight:700;color:#d35400;font-size:9px">'+(t.date||'—')+'</td>'
+      +'<td style="padding:3px 6px;border:0.5px solid #ddd;text-align:center;font-size:13px">&#9744;</td>'
+      +'</tr>';
+  });
+  if(prep.remarques){
+    h += '<tr><td colspan="6" style="padding:4px 6px;border:0.5px solid #ddd;font-size:8px;background:#fffde7">Remarques : '+prep.remarques+'</td></tr>';
+  }
+  // Signatures
+  h += '<tr><td colspan="3" style="padding:18px 6px 4px;border:none;text-align:center"><div style="border-top:1px solid #555;padding-top:3px;font-size:7.5px;color:#888">Signature client</div></td>'
+    +'<td colspan="3" style="padding:18px 6px 4px;border:none;text-align:center"><div style="border-top:1px solid #555;padding-top:3px;font-size:7.5px;color:#888">Signature commercial — '+commercial+'</div></td></tr>';
+  return h;
+}
+
+function buildPrepMailBody(prep, d){
+  if(!prep || !prep.tasks || !prep.tasks.length) return '';
+  var lines = [
+    '',
+    '--- PRÉPARATION CLIENT ---',
+    'Date de pose prévue : '+(prep.date_pose||'—'),
+    'Tél client : '+(prep.tel||'—'),
+    '',
+    'Tâches à réaliser avant la pose :'
+  ];
+  prep.tasks.forEach(function(t){
+    lines.push('• '+t.label+(t.date?' → avant le '+t.date:'')+' ☐');
+  });
+  if(prep.remarques) lines.push('\nRemarques : '+prep.remarques);
+  return lines.join('\n');
+}
+
+function buildPrepSMS(prep, produit, client){
+  if(!prep || !prep.tasks || !prep.tasks.length) return '';
+  var lines = ['Bonjour,',
+    'Voici les préparations pour la pose de votre '+produit+' prévue le '+(prep.date_pose||'—')+' :'];
+  prep.tasks.forEach(function(t){
+    lines.push('• '+t.label+(t.date?' (avant le '+t.date+')':''));
+  });
+  if(prep.remarques) lines.push('Note : '+prep.remarques);
+  lines.push('Merci — EUROSOM');
+  return lines.join('\n');
+}
+
+function sendPrepSMS(){
+  var prep = collectPrepData();
+  var d = collectForm();
+  if(!prep.tel){showToast('Renseignez le téléphone client');return;}
+  var tel = prep.tel.replace(/\s/g,'');
+  var labels={bvr:'BVR',somogliss:'SOMOGLISS',somroller:'SOMROLLER',classique:'Classique'};
+  window.location.href='sms:'+tel+'?body='+encodeURIComponent(buildPrepSMS(prep, labels[currentProduit], d.client));
+}
+
+
+
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800);}
+
+updateBadge();
+</script>
+</body>
+</html>
