@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eurosom — Tableau de bord</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#c0392b;--red-dark:#96281b;--red-light:#e74c3c;--red-bg:#fdf2f1;
+  --gray:#4a4a4a;--gray-light:#f2f2f2;--gray-mid:#c8c8c8;--gray-dark:#2c2c2c;
+  --amber:#e67e22;--amber-dark:#b35c00;--amber-bg:#fdf3e7;
+  --green:#27ae60;--green-dark:#1d7a44;--green-bg:#edf9f1;
+  --blue:#2980b9;--blue-bg:#eaf3fa;
+  --border:#ddd;
+  --font-head:'Barlow Condensed',sans-serif;
+  --font-body:'Barlow',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-body);font-size:15px;background:#ebebeb;color:var(--gray-dark)}
+.app{max-width:1000px;margin:0 auto;min-height:100vh}
+.hidden{display:none!important}
+button{font-family:var(--font-body);cursor:pointer}
+
+/* HEADER */
+.header{background:var(--red-dark);position:sticky;top:0;z-index:40;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.header-inner{max-width:1000px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:12px 16px}
+.header-logo{font-family:var(--font-head);font-size:24px;font-weight:900;color:#fff;letter-spacing:1px;line-height:1}
+.header-logo span{color:rgba(255,255,255,.55);font-weight:600;font-size:12px;display:block;letter-spacing:2.5px;text-transform:uppercase;margin-top:2px}
+.header-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.header-user{color:#fff;font-size:14px;text-align:right;line-height:1.2}
+.header-user small{color:rgba(255,255,255,.6);font-size:11px;text-transform:uppercase;letter-spacing:1px}
+.btn-head{background:rgba(255,255,255,.15);border:none;color:#fff;font-family:var(--font-head);font-size:13px;font-weight:600;letter-spacing:1px;padding:7px 12px;border-radius:4px}
+.btn-head:active{background:rgba(255,255,255,.28)}
+
+/* LOGIN */
+.login-box{max-width:380px;margin:60px auto;background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.12);padding:28px}
+.login-box h1{font-family:var(--font-head);font-size:24px;color:var(--red-dark);margin-bottom:4px}
+.login-box p{font-size:13.5px;color:var(--gray);margin-bottom:18px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:var(--font-body);font-size:15px;outline:none;background:#fff}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--red)}
+.btn-main{width:100%;background:var(--red);border:none;color:#fff;font-family:var(--font-head);font-size:17px;font-weight:700;letter-spacing:1.5px;padding:12px;border-radius:8px}
+.btn-main:active{background:var(--red-dark)}
+.btn-main:disabled{background:var(--gray-mid)}
+.login-err{background:var(--red-bg);color:var(--red-dark);font-size:13.5px;padding:10px 12px;border-radius:8px;margin-bottom:14px}
+
+/* CONTENU */
+.content{padding:16px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px}
+.stat{background:#fff;border-radius:10px;padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.stat p{font-size:12px;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.stat b{font-family:var(--font-head);font-size:28px;font-weight:700;display:block;margin-top:2px}
+.stat.red b{color:var(--red)}
+.stat.amber b{color:var(--amber-dark)}
+.stat.blue b{color:var(--blue)}
+
+.sec-title{font-family:var(--font-head);font-size:19px;font-weight:700;letter-spacing:.5px;margin:0 2px 8px;color:var(--gray-dark)}
+.panel{background:#fff;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.08);overflow:hidden;margin-bottom:20px}
+.row{display:flex;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid #f0f0f0;cursor:pointer}
+.row:first-child{border-top:none}
+.row:hover{background:#fafafa}
+.row .main{flex:1;min-width:0}
+.row .main b{font-size:14.5px;font-weight:600;display:block}
+.row .main small{font-size:13px;color:#777;display:block;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:10px;white-space:nowrap}
+.tag.danger{background:var(--red-bg);color:var(--red-dark)}
+.tag.warn{background:var(--amber-bg);color:var(--amber-dark)}
+.tag.info{background:var(--blue-bg);color:var(--blue)}
+.tag.ok{background:var(--green-bg);color:var(--green-dark)}
+.btn-sm{background:var(--gray-light);border:1px solid var(--border);border-radius:6px;font-size:12.5px;font-weight:600;padding:6px 10px;white-space:nowrap}
+.btn-sm:active{background:#e5e5e5}
+.btn-sm.primary{background:var(--red);border-color:var(--red);color:#fff}
+.empty{padding:18px 14px;color:#999;font-size:13.5px;text-align:center}
+
+.progress{height:5px;border-radius:3px;background:var(--gray-light);overflow:hidden;margin-top:6px}
+.progress i{display:block;height:100%;background:var(--green)}
+.progress i.low{background:var(--red)}
+.progress i.mid{background:var(--amber)}
+
+/* OVERLAY */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:60;display:flex;justify-content:center;align-items:flex-start;padding:16px;overflow-y:auto}
+.sheet{background:#ebebeb;border-radius:12px;max-width:640px;width:100%;margin:12px 0;overflow:hidden}
+.sheet-head{background:var(--red-dark);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0}
+.sheet-head h2{font-family:var(--font-head);font-size:20px;font-weight:700;letter-spacing:.5px;flex:1}
+.sheet-head small{display:block;font-family:var(--font-body);font-size:12.5px;color:rgba(255,255,255,.65);font-weight:400;letter-spacing:0}
+.sheet-close{background:rgba(255,255,255,.15);border:none;color:#fff;font-size:17px;width:34px;height:34px;border-radius:6px}
+.sheet-body{padding:14px}
+.card{background:#fff;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);padding:14px;margin-bottom:12px}
+.card h3{font-family:var(--font-head);font-size:16px;font-weight:700;letter-spacing:.5px;color:var(--gray-dark);margin-bottom:10px}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;font-size:14px}
+.info-grid p{color:#888;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px}
+.info-grid b{font-weight:600}
+.link-box{display:flex;gap:6px;margin-top:10px}
+.link-box input{flex:1;border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:12.5px;color:#666;background:#fafafa}
+
+.task-row{display:flex;gap:10px;padding:9px 0;border-top:1px solid #f2f2f2;cursor:pointer}
+.task-row .box{width:21px;height:21px;border-radius:50%;border:2px solid var(--gray-mid);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;margin-top:1px}
+.task-row.done .box{background:var(--green);border-color:var(--green)}
+.task-row .t{font-size:14px;font-weight:500;flex:1}
+.task-row.done .t{color:#9a9a9a;text-decoration:line-through}
+.task-row .pin{color:var(--red);font-size:11.5px;font-weight:700}
+
+.chat-msgs{display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto;margin-bottom:10px}
+.msg{max-width:85%;padding:8px 11px;border-radius:11px;font-size:14px;line-height:1.35;white-space:pre-wrap;word-wrap:break-word}
+.msg .who{font-size:11px;font-weight:700;margin-bottom:2px}
+.msg .when{font-size:10px;margin-top:2px;opacity:.55;text-align:right}
+.msg.client{align-self:flex-start;background:var(--gray-light)}
+.msg.client .who{color:var(--blue)}
+.msg.staff{align-self:flex-end;background:var(--red-bg)}
+.msg.staff .who{color:var(--red-dark)}
+.chat-input{display:flex;gap:8px}
+.chat-input textarea{flex:1;border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-family:var(--font-body);font-size:14.5px;resize:none;height:42px;outline:none}
+.chat-input button{background:var(--red);border:none;color:#fff;font-family:var(--font-head);font-size:14px;font-weight:700;letter-spacing:1px;padding:0 16px;border-radius:8px}
+
+.prod-block{border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;background:#fafafa}
+.btn-add{background:none;border:2px dashed var(--gray-mid);border-radius:10px;width:100%;padding:10px;font-size:14px;font-weight:600;color:#777}
+
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(90px);background:var(--gray-dark);color:#fff;padding:10px 18px;border-radius:8px;font-size:14px;transition:transform .25s;z-index:99;max-width:90%;text-align:center}
+#toast.show{transform:translateX(-50%) translateY(0)}
+@media(max-width:560px){.info-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="header"><div class="header-inner">
+  <div class="header-logo">EUROSOM<span>Tableau de bord</span></div>
+  <div class="header-right hidden" id="head-right">
+    <div class="header-user"><span id="u-nom"></span><br><small id="u-role"></small></div>
+    <button class="btn-head" onclick="loadAll()">⟳</button>
+    <button class="btn-head" onclick="logout()">SORTIR</button>
+  </div>
+</div></div>
+
+<div class="app">
+
+  <!-- LOGIN -->
+  <div id="login">
+    <div class="login-box">
+      <h1>CONNEXION</h1>
+      <p>Accès réservé à l'équipe Eurosom.</p>
+      <div id="login-err" class="login-err hidden"></div>
+      <div class="field"><label>Email</label><input type="email" id="l-email" autocomplete="username"></div>
+      <div class="field"><label>Mot de passe</label><input type="password" id="l-pass" autocomplete="current-password"></div>
+      <button class="btn-main" id="l-btn" onclick="login()">SE CONNECTER</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dash" class="content hidden">
+    <div class="stats" id="stats"></div>
+
+    <div class="sec-title">À TRAITER</div>
+    <div class="panel" id="todo"></div>
+
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <div class="sec-title" style="margin:0;flex:1">DOSSIERS EN COURS</div>
+      <button class="btn-sm primary" onclick="openCreate()">＋ Nouveau dossier</button>
+    </div>
+    <div class="panel" id="dossiers"></div>
+
+    <div class="sec-title">POSES RÉALISÉES</div>
+    <div class="panel" id="dossiers-done"></div>
+  </div>
+</div>
+
+<!-- DÉTAIL DOSSIER -->
+<div class="overlay hidden" id="ov-detail" onclick="if(event.target===this)closeDetail()">
+  <div class="sheet">
+    <div class="sheet-head"><h2 id="d-title">—<small id="d-sub"></small></h2>
+      <button class="sheet-close" onclick="closeDetail()">✕</button></div>
+    <div class="sheet-body" id="d-body"></div>
+  </div>
+</div>
+
+<!-- NOUVEAU DOSSIER -->
+<div class="overlay hidden" id="ov-create" onclick="if(event.target===this)closeCreate()">
+  <div class="sheet">
+    <div class="sheet-head"><h2>NOUVEAU DOSSIER</h2>
+      <button class="sheet-close" onclick="closeCreate()">✕</button></div>
+    <div class="sheet-body">
+      <div class="card">
+        <h3>CLIENT</h3>
+        <div class="field"><label>Type de client</label>
+          <select id="c-type" onchange="onTypeChange()">
+            <option value="particulier">Particulier (contact SMS)</option>
+            <option value="charpentier">Charpentier / Pro (contact email)</option>
+          </select></div>
+        <div class="field"><label>Nom / Société</label><input id="c-nom" placeholder="M. Dupont / SARL Toit & Bois"></div>
+        <div class="field"><label>Téléphone</label><input id="c-tel" placeholder="06 00 00 00 00"></div>
+        <div class="field"><label>Email</label><input id="c-email" placeholder="client@exemple.fr"></div>
+        <div class="field"><label>Adresse du chantier</label><input id="c-site" placeholder="ZA des Éoliennes, Pierrelatte"></div>
+      </div>
+      <div class="card">
+        <h3>POSE</h3>
+        <div class="field"><label>Période prévisionnelle (texte affiché au client)</label><input id="c-periode" placeholder="semaine du 3 août"></div>
+        <div class="field"><label>Début de la période (pour les alertes)</label><input type="date" id="c-periode-date"></div>
+        <div class="field"><label>Date précise (si déjà connue — sinon laisser vide)</label><input type="date" id="c-date"></div>
+        <div class="field hidden" id="c-commercial-wrap"><label>Commercial en charge</label><select id="c-commercial"></select></div>
+      </div>
+      <div class="card">
+        <h3>PRODUITS</h3>
+        <div id="c-prods"></div>
+        <button class="btn-add" onclick="addProdRow()">＋ Ajouter un produit</button>
+      </div>
+      <button class="btn-main" id="c-btn" onclick="createDossier()">CRÉER LE DOSSIER</button>
+      <div class="card hidden" id="c-result" style="margin-top:12px">
+        <h3>✅ DOSSIER CRÉÉ — LIEN CLIENT</h3>
+        <div class="link-box"><input id="c-link" readonly>
+          <button class="btn-sm" onclick="copyLink('c-link')">Copier</button></div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn-sm primary" id="c-send-sms" onclick="sendCreatedLink()">📱 Envoyer le lien</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+var SUPABASE_URL = 'https://moyafpnzkpicpzvfwtcn.supabase.co';
+var SUPABASE_KEY = 'sb_publishable_ucDQwKeyvraDTvWOnEnSbA_vD19JtF6';
+var SUIVI_URL = 'https://charleu22640.github.io/eurosom-app/suivi.html';
+var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+var me = null;           // profil connecté {id, nom, role}
+var D = { dossiers:[], produits:[], taches:[], messages:[], alertes:[], profils:[] };
+var currentDossier = null;
+var createdDossier = null;
+
+var FAMILLES = {bvr:'BVR', somogliss:'SOMOGLISS', somroller:'SOMROLLER', classique:'Famille Classique'};
+
+/* Tâches de préparation — reprises de l'appli Prise de Mesures */
+var PREP_TASKS = {
+  bvr:[
+    {cat:'Accès & Zone', tasks:[
+      {label:'Dégager la zone de pose', desc:'Libérer sur 2 m de chaque côté — retirer matériel, véhicules, animaux'},
+      {label:"Assurer l'accès camion", desc:'Signaler restrictions de hauteur ou largeur'},
+      {label:'Désigner un responsable sur place', desc:'Disponible pour réceptionner les travaux'}]},
+    {cat:'Électricité', tasks:[
+      {label:'Prévoir prise 220V à moins de 10 m', desc:"Vérifier la conformité de l'installation"},
+      {label:"Câble d'alimentation posé jusqu'au moteur", desc:'Si manœuvre électrique'}]},
+    {cat:'Structure & Supports', tasks:[
+      {label:'Vérifier la traverse haute', desc:'Accessible, solide, prévoir fixations si métal'},
+      {label:'Vérifier alignement des montants', desc:"Supports plans et d'aplomb"},
+      {label:"Préparer l'emplacement du capot", desc:'Si capot prévu'}]},
+    {cat:'Nacelle', tasks:[
+      {label:'Louer une nacelle', desc:'Confirmer la disponibilité pour la date de pose'},
+      {label:'Prévoir engin de levage', desc:'Matériel client à prévoir sur place le jour de la pose'},
+      {label:'Prévoir espace de manœuvre au sol', desc:'Dégagement suffisant pour la circulation'}]}
+  ],
+  somogliss:[
+    {cat:'Accès & Zone', tasks:[
+      {label:'Dégager la zone de pose', desc:'Libérer sur 2 m de chaque côté'},
+      {label:"Assurer l'accès camion", desc:'Signaler restrictions'},
+      {label:'Désigner un responsable sur place', desc:''}]},
+    {cat:'Électricité', tasks:[
+      {label:'Prévoir prise 220V à moins de 10 m', desc:''}]},
+    {cat:'Structure', tasks:[
+      {label:'Vérifier planéité traverse haute (rail)', desc:'Sur toute la longueur'},
+      {label:'Positionner les barrières de sécurité', desc:'Espace pour partie fixe et coulissement'},
+      {label:'Vérifier planéité du sol', desc:'Signaler tout dénivelé'}]},
+    {cat:'Nacelle', tasks:[
+      {label:'Louer une nacelle', desc:'Confirmer disponibilité'},
+      {label:'Prévoir engin de levage', desc:'Matériel client à prévoir sur place'}]}
+  ],
+  somroller:[
+    {cat:'Accès & Zone', tasks:[
+      {label:'Dégager la zone de pose', desc:'Libérer sur 2 m de chaque côté'},
+      {label:"Assurer l'accès camion", desc:''},
+      {label:'Désigner un responsable sur place', desc:''}]},
+    {cat:'Électricité', tasks:[
+      {label:'Prévoir alimentation électrique', desc:'220V ou triphasé selon config, à moins de 10 m'},
+      {label:"Câble moteur posé jusqu'à l'emplacement", desc:''}]},
+    {cat:'Structure', tasks:[
+      {label:'Vérifier traverse haute (horizontale et solide)', desc:'Supporte axe + rideau'},
+      {label:"Poteaux d'aplomb et espacés selon plan", desc:'Platines de fixation si métal'},
+      {label:'Marquer emplacements des guides', desc:'Au sol et sur traverse haute'}]},
+    {cat:'Nacelle', tasks:[
+      {label:'Louer une nacelle', desc:'Confirmer disponibilité'},
+      {label:'Prévoir engin de levage', desc:'Matériel client à prévoir sur place'},
+      {label:'Espace de manœuvre nacelle', desc:''}]}
+  ],
+  classique:[
+    {cat:'Accès & Zone', tasks:[
+      {label:'Dégager la zone de pose', desc:'Libérer sur 2 m de chaque côté'},
+      {label:"Assurer l'accès camion", desc:''},
+      {label:'Désigner un responsable sur place', desc:''}]},
+    {cat:'Électricité', tasks:[
+      {label:'Câble moteur posé (220V ou triphasé)', desc:"Jusqu'à l'emplacement moteur"}]},
+    {cat:'Structure', tasks:[
+      {label:'Traverse haute horizontale et solide', desc:'Sur toute la largeur'},
+      {label:"Poteaux d'aplomb et en place", desc:"Avant l'intervention"}]},
+    {cat:'Nacelle', tasks:[
+      {label:'Louer une nacelle', desc:'Confirmer disponibilité'},
+      {label:'Prévoir engin de levage', desc:'Matériel client à prévoir sur place'}]}
+  ]
+};
+
+function esc(s){var d=document.createElement('div');d.textContent=s==null?'':s;return d.innerHTML;}
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800);}
+function fmtDate(s){if(!s)return'—';return new Date(s+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});}
+function joursAvant(s){return Math.ceil((new Date(s+'T12:00:00')-new Date())/86400000);}
+function lienClient(d){return SUIVI_URL+'?t='+d.token;}
+
+/* ================= AUTH ================= */
+async function login(){
+  var btn=document.getElementById('l-btn'), err=document.getElementById('login-err');
+  err.classList.add('hidden'); btn.disabled=true; btn.textContent='CONNEXION…';
+  var r = await sb.auth.signInWithPassword({
+    email: document.getElementById('l-email').value.trim(),
+    password: document.getElementById('l-pass').value
+  });
+  btn.disabled=false; btn.textContent='SE CONNECTER';
+  if(r.error){ err.textContent='Email ou mot de passe incorrect.'; err.classList.remove('hidden'); return; }
+  init();
+}
+async function logout(){ await sb.auth.signOut(); location.reload(); }
+
+async function init(){
+  var s = await sb.auth.getSession();
+  if(!s.data.session){ return; }
+  var uid = s.data.session.user.id;
+  var p = await sb.from('profils').select('*').eq('id', uid).single();
+  if(p.error || !p.data){ toast('Profil introuvable — contactez Charly'); return; }
+  me = p.data;
+  document.getElementById('u-nom').textContent = me.nom;
+  document.getElementById('u-role').textContent = me.role === 'admin' ? 'Administrateur' : 'Commercial';
+  document.getElementById('login').classList.add('hidden');
+  document.getElementById('head-right').classList.remove('hidden');
+  document.getElementById('dash').classList.remove('hidden');
+  await loadAll();
+  setInterval(loadAll, 60000);
+}
+
+/* ================= DONNÉES ================= */
+async function loadAll(){
+  var rs = await Promise.all([
+    sb.from('dossiers').select('*').order('created_at',{ascending:false}),
+    sb.from('produits').select('*').order('ordre'),
+    sb.from('taches').select('*').order('ordre'),
+    sb.from('messages').select('*').order('created_at'),
+    sb.from('alertes').select('*'),
+    sb.from('profils').select('*')
+  ]);
+  var names=['dossiers','produits','taches','messages','alertes','profils'];
+  for(var i=0;i<rs.length;i++){
+    if(rs[i].error){ toast('Erreur de chargement ('+names[i]+')'); return; }
+    D[names[i]] = rs[i].data;
+  }
+  render();
+  if(currentDossier) renderDetail(currentDossier);
+}
+
+function dossierStats(d){
+  var prods = D.produits.filter(function(p){return p.dossier_id===d.id;});
+  var taches = D.taches.filter(function(t){return t.dossier_id===d.id;});
+  var done = taches.filter(function(t){return t.done;}).length;
+  var unread = D.messages.filter(function(m){return m.dossier_id===d.id && m.sender_type==='client' && !m.lu_par_staff;}).length;
+  return {prods:prods, total:taches.length, done:done, unread:unread};
+}
+function commercialNom(id){
+  var p = D.profils.find(function(x){return x.id===id;});
+  return p ? p.nom : '—';
+}
+
+/* ================= RENDU DASHBOARD ================= */
+function render(){
+  var enCours = D.dossiers.filter(function(d){return d.statut==='en_cours';});
+  var faits = D.dossiers.filter(function(d){return d.statut==='pose_faite';});
+
+  // --- À traiter ---
+  var todo = [];
+  var today = new Date().toISOString().slice(0,10);
+
+  // relances dues
+  D.alertes.forEach(function(a){
+    if(a.statut!=='a_faire' || a.due_date > today) return;
+    var d = D.dossiers.find(function(x){return x.id===a.dossier_id && x.statut==='en_cours';});
+    if(!d) return;
+    var st = dossierStats(d);
+    todo.push({type:'relance', a:a, d:d, st:st, ordre:1});
+  });
+  // dates à fixer
+  enCours.forEach(function(d){
+    if(d.date_pose) return;
+    var urg = d.periode_debut ? joursAvant(d.periode_debut) : 999;
+    todo.push({type:'date', d:d, urg:urg, ordre: urg<=21 ? 2 : 4});
+  });
+  // messages non lus
+  enCours.concat(faits).forEach(function(d){
+    var st = dossierStats(d);
+    if(st.unread>0){
+      var last = D.messages.filter(function(m){return m.dossier_id===d.id && m.sender_type==='client';}).pop();
+      todo.push({type:'msg', d:d, n:st.unread, last:last, ordre:3});
+    }
+  });
+  todo.sort(function(a,b){return a.ordre-b.ordre;});
+
+  // --- stats ---
+  var nRel = todo.filter(function(t){return t.type==='relance';}).length;
+  var nDat = todo.filter(function(t){return t.type==='date' && t.urg<=21;}).length;
+  var nMsg = todo.filter(function(t){return t.type==='msg';}).length;
+  var sem = enCours.filter(function(d){return d.date_pose && joursAvant(d.date_pose)>=0 && joursAvant(d.date_pose)<=7;}).length;
+  document.getElementById('stats').innerHTML =
+    '<div class="stat red"><p>Relances à faire</p><b>'+nRel+'</b></div>'
+   +'<div class="stat amber"><p>Dates à fixer</p><b>'+nDat+'</b></div>'
+   +'<div class="stat blue"><p>Messages non lus</p><b>'+nMsg+'</b></div>'
+   +'<div class="stat"><p>Poses sous 7 jours</p><b>'+sem+'</b></div>';
+
+  // --- liste à traiter ---
+  var h = todo.map(function(t){
+    if(t.type==='relance'){
+      var lbl = t.a.type==='j30' ? 'Relance J-30' : 'Relance J-14';
+      var reste = t.st.total - t.st.done;
+      return '<div class="row" onclick="openDetail(\''+t.d.id+'\')">'
+        +'<span class="tag danger">'+lbl+'</span>'
+        +'<div class="main"><b>'+esc(t.d.client_nom)+'</b>'
+        +'<small>Pose le '+fmtDate(t.d.date_pose)+' · Prépa '+t.st.done+'/'+t.st.total
+        +(reste>0?' — '+reste+' point(s) restant(s)':' — tout est prêt ✓')+'</small></div>'
+        +'<button class="btn-sm primary" onclick="event.stopPropagation();relancer(\''+t.a.id+'\')">'
+        +(t.d.canal==='sms'?'📱 SMS':'✉ Email')+'</button>'
+        +'<button class="btn-sm" onclick="event.stopPropagation();relanceFaite(\''+t.a.id+'\')">Fait ✓</button>'
+        +'</div>';
+    }
+    if(t.type==='date'){
+      var info = t.d.periode_texte ? esc(t.d.periode_texte) + (t.urg<999 ? ' — dans '+t.urg+' j' : '') : 'aucune période renseignée';
+      return '<div class="row" onclick="openDetail(\''+t.d.id+'\')">'
+        +'<span class="tag warn">Date à fixer</span>'
+        +'<div class="main"><b>'+esc(t.d.client_nom)+'</b><small>Période : '+info+'</small></div>'
+        +'<button class="btn-sm" onclick="event.stopPropagation();openDetail(\''+t.d.id+'\')">Fixer</button></div>';
+    }
+    var prev = t.last ? esc(t.last.contenu).slice(0,70) : '';
+    return '<div class="row" onclick="openDetail(\''+t.d.id+'\')">'
+      +'<span class="tag info">'+t.n+' message'+(t.n>1?'s':'')+'</span>'
+      +'<div class="main"><b>'+esc(t.d.client_nom)+'</b><small>« '+prev+' »</small></div>'
+      +'<button class="btn-sm" onclick="event.stopPropagation();openDetail(\''+t.d.id+'\')">Répondre</button></div>';
+  }).join('');
+  document.getElementById('todo').innerHTML = h || '<div class="empty">Rien à traiter — tout est à jour ✓</div>';
+
+  // --- dossiers ---
+  document.getElementById('dossiers').innerHTML = enCours.map(rowDossier).join('')
+    || '<div class="empty">Aucun dossier en cours. Créez le premier !</div>';
+  document.getElementById('dossiers-done').innerHTML = faits.slice(0,10).map(rowDossier).join('')
+    || '<div class="empty">Aucune pose réalisée pour l\'instant.</div>';
+}
+
+function rowDossier(d){
+  var st = dossierStats(d);
+  var pct = st.total ? Math.round(st.done/st.total*100) : 0;
+  var cls = pct===100 ? '' : (pct>=50 ? 'mid' : 'low');
+  var when = d.date_pose ? 'Pose le '+fmtDate(d.date_pose) : (d.periode_texte ? 'Période : '+esc(d.periode_texte) : 'Date à définir');
+  var badges = '';
+  if(!d.premiere_ouverture && d.statut==='en_cours') badges += '<span class="tag info">Lien jamais ouvert</span>';
+  if(st.unread) badges += '<span class="tag info">'+st.unread+' msg</span>';
+  var famList = st.prods.map(function(p){return esc(p.designation);}).join(', ') || 'aucun produit';
+  var typeIco = d.client_type==='charpentier' ? '🔨' : '👤';
+  return '<div class="row" onclick="openDetail(\''+d.id+'\')">'
+    +'<div class="main"><b>'+typeIco+' '+esc(d.client_nom)
+    +(me.role==='admin'?' <span style="font-weight:400;color:#999;font-size:12px">· '+esc(commercialNom(d.commercial_id))+'</span>':'')+'</b>'
+    +'<small>'+famList+' — '+when+'</small>'
+    +'<div class="progress"><i class="'+cls+'" style="width:'+pct+'%"></i></div></div>'
+    +badges
+    +'<span class="tag '+(pct===100?'ok':(pct>=50?'warn':'danger'))+'">'+st.done+'/'+st.total+'</span>'
+    +'</div>';
+}
+
+/* ================= DÉTAIL ================= */
+async function openDetail(id){
+  currentDossier = id;
+  document.getElementById('ov-detail').classList.remove('hidden');
+  renderDetail(id);
+  // marquer les messages client comme lus
+  await sb.from('messages').update({lu_par_staff:true})
+    .eq('dossier_id', id).eq('sender_type','client').eq('lu_par_staff',false);
+  D.messages.forEach(function(m){ if(m.dossier_id===id && m.sender_type==='client') m.lu_par_staff=true; });
+  render();
+}
+function closeDetail(){ currentDossier=null; document.getElementById('ov-detail').classList.add('hidden'); }
+
+function renderDetail(id){
+  var d = D.dossiers.find(function(x){return x.id===id;});
+  if(!d) return;
+  var st = dossierStats(d);
+  document.getElementById('d-title').innerHTML = esc(d.client_nom)
+    +'<small>'+(d.client_type==='charpentier'?'Charpentier':'Particulier')
+    +' · Commercial : '+esc(commercialNom(d.commercial_id))+'</small>';
+
+  var h = '';
+  // infos + lien
+  h += '<div class="card"><h3>DOSSIER</h3><div class="info-grid">'
+    +'<div><p>Téléphone</p><b>'+esc(d.client_tel||'—')+'</b></div>'
+    +'<div><p>Email</p><b>'+esc(d.client_email||'—')+'</b></div>'
+    +'<div><p>Chantier</p><b>'+esc(d.site_adresse||'—')+'</b></div>'
+    +'<div><p>Lien ouvert par le client</p><b>'+(d.premiere_ouverture?'Oui ✓':'<span style="color:var(--red)">Jamais</span>')+'</b></div>'
+    +'</div>'
+    +'<div class="link-box"><input id="d-link" readonly value="'+lienClient(d)+'">'
+    +'<button class="btn-sm" onclick="copyLink(\'d-link\')">Copier</button>'
+    +'<button class="btn-sm primary" onclick="envoyerLien(\''+d.id+'\')">'+(d.canal==='sms'?'📱':'✉')+' Envoyer</button></div>'
+    +'</div>';
+
+  // date de pose
+  h += '<div class="card"><h3>DATE DE POSE</h3>';
+  if(d.date_pose){
+    h += '<p style="font-size:15px;margin-bottom:8px">Fixée au <b>'+fmtDate(d.date_pose)+'</b>'
+      +(joursAvant(d.date_pose)>=0?' — dans '+joursAvant(d.date_pose)+' jour(s)':'')+'</p>';
+  } else {
+    h += '<p style="font-size:14px;color:#888;margin-bottom:8px">Non fixée. Période : '+esc(d.periode_texte||'—')+'</p>';
+  }
+  h += '<div style="display:flex;gap:8px;align-items:center">'
+    +'<input type="date" id="d-date" value="'+(d.date_pose||'')+'" style="border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:var(--font-body)">'
+    +'<button class="btn-sm primary" onclick="fixerDate(\''+d.id+'\')">Enregistrer</button>';
+  if(d.statut==='en_cours'){
+    h += '<button class="btn-sm" style="margin-left:auto" onclick="poseFaite(\''+d.id+'\')">Pose réalisée ✓</button>';
+  }
+  h += '</div><p style="font-size:12px;color:#999;margin-top:6px">Enregistrer une date (re)programme automatiquement les relances J-30 et J-14.</p></div>';
+
+  // produits & tâches
+  st.prods.forEach(function(p){
+    var taches = D.taches.filter(function(t){return t.produit_id===p.id;});
+    var done = taches.filter(function(t){return t.done;}).length;
+    h += '<div class="card"><h3>'+esc(p.designation).toUpperCase()
+      +' <span style="font-family:var(--font-body);font-weight:400;font-size:12.5px;color:#888">'
+      +esc(FAMILLES[p.famille]||p.famille)+(p.localisation?' — '+esc(p.localisation):'')+' · '+done+'/'+taches.length+'</span></h3>';
+    taches.forEach(function(t){
+      h += '<div class="task-row'+(t.done?' done':'')+'" onclick="staffToggle(\''+t.id+'\','+(!t.done)+')">'
+        +'<div class="box">'+(t.done?'✓':'')+'</div>'
+        +'<div class="t">'+esc(t.label)
+        +(t.descr?'<div style="font-size:12px;color:#999;font-weight:400">'+esc(t.descr)+'</div>':'')
+        +(t.is_custom?'<div class="pin">📌 Spécifique client</div>':'')+'</div></div>';
+    });
+    h += '<div style="display:flex;gap:6px;margin-top:10px">'
+      +'<input id="new-task-'+p.id+'" placeholder="Ajouter une tâche spécifique…" style="flex:1;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:var(--font-body);font-size:13.5px">'
+      +'<button class="btn-sm" onclick="addTask(\''+p.id+'\',\''+d.id+'\')">Ajouter</button></div>';
+    h += '</div>';
+  });
+
+  // messagerie
+  var msgs = D.messages.filter(function(m){return m.dossier_id===d.id;});
+  h += '<div class="card"><h3>MESSAGERIE</h3><div class="chat-msgs" id="d-msgs">';
+  if(!msgs.length) h += '<div style="color:#aaa;font-size:13px;text-align:center;padding:8px">Aucun message.</div>';
+  msgs.forEach(function(m){
+    var when = new Date(m.created_at).toLocaleDateString('fr-FR',{day:'numeric',month:'short'})
+      +' '+new Date(m.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    var who = m.sender_type==='client' ? esc(m.sender_nom) : esc(m.sender_nom)+' · Eurosom';
+    h += '<div class="msg '+m.sender_type+'"><div class="who">'+who+'</div>'+esc(m.contenu)
+      +'<div class="when">'+when+'</div></div>';
+  });
+  h += '</div><div class="chat-input"><textarea id="d-msg-input" placeholder="Répondre au client…" maxlength="2000"></textarea>'
+    +'<button onclick="staffSend(\''+d.id+'\')">ENVOYER</button></div></div>';
+
+  document.getElementById('d-body').innerHTML = h;
+  var box = document.getElementById('d-msgs'); if(box) box.scrollTop = box.scrollHeight;
+}
+
+async function staffToggle(tid, val){
+  var r = await sb.from('taches').update({done:val, done_at: val? new Date().toISOString():null}).eq('id',tid);
+  if(r.error){ toast('Erreur — réessayez'); return; }
+  var t = D.taches.find(function(x){return x.id===tid;}); if(t) t.done=val;
+  renderDetail(currentDossier); render();
+}
+
+async function addTask(pid, did){
+  var inp = document.getElementById('new-task-'+pid);
+  if(!inp || !inp.value.trim()) return;
+  var maxOrdre = Math.max.apply(null, [0].concat(D.taches.filter(function(t){return t.produit_id===pid;}).map(function(t){return t.ordre;})));
+  var r = await sb.from('taches').insert({produit_id:pid, dossier_id:did, categorie:'Spécifique',
+    label:inp.value.trim(), is_custom:true, ordre:maxOrdre+1}).select().single();
+  if(r.error){ toast('Erreur — réessayez'); return; }
+  D.taches.push(r.data); inp.value='';
+  renderDetail(currentDossier);
+}
+
+async function staffSend(did){
+  var inp = document.getElementById('d-msg-input');
+  var txt = inp.value.trim(); if(!txt) return;
+  var r = await sb.from('messages').insert({dossier_id:did, sender_type:'staff', sender_nom:me.nom,
+    profil_id:me.id, contenu:txt, lu_par_staff:true}).select().single();
+  if(r.error){ toast('Envoi impossible'); return; }
+  D.messages.push(r.data); inp.value='';
+  renderDetail(currentDossier);
+}
+
+async function fixerDate(did){
+  var v = document.getElementById('d-date').value;
+  if(!v){ toast('Choisissez une date'); return; }
+  var r = await sb.from('dossiers').update({date_pose:v}).eq('id',did);
+  if(r.error){ toast('Erreur — réessayez'); return; }
+  toast('Date enregistrée — relances programmées');
+  await loadAll();
+}
+
+async function poseFaite(did){
+  if(!confirm('Marquer cette pose comme réalisée ?')) return;
+  var r = await sb.from('dossiers').update({statut:'pose_faite'}).eq('id',did);
+  if(r.error){ toast('Erreur'); return; }
+  closeDetail(); await loadAll();
+}
+
+/* ================= RELANCES ================= */
+function msgRelance(d){
+  var st = dossierStats(d);
+  var reste = st.total - st.done;
+  var l = 'Bonjour '+d.client_nom+', votre pose EUROSOM approche ('+fmtDate(d.date_pose)+').';
+  l += reste>0 ? ' Il reste '+reste+' point(s) de préparation à valider : ' : ' Retrouvez votre suivi ici : ';
+  l += lienClient(d)+' — EUROSOM';
+  return l;
+}
+function relancer(aid){
+  var a = D.alertes.find(function(x){return x.id===aid;}); if(!a) return;
+  var d = D.dossiers.find(function(x){return x.id===a.dossier_id;}); if(!d) return;
+  var body = msgRelance(d);
+  if(d.canal==='sms' && d.client_tel){
+    window.location.href = 'sms:'+d.client_tel.replace(/\s/g,'')+'?body='+encodeURIComponent(body);
+  } else if(d.client_email){
+    window.location.href = 'mailto:'+d.client_email+'?subject='+encodeURIComponent('EUROSOM — Votre pose approche')
+      +'&body='+encodeURIComponent(body);
+  } else { toast('Aucun contact renseigné pour ce client'); return; }
+  setTimeout(function(){ if(confirm('Message envoyé ? Marquer la relance comme faite ?')) relanceFaite(aid); }, 1200);
+}
+async function relanceFaite(aid){
+  var r = await sb.from('alertes').update({statut:'faite', done_at:new Date().toISOString(), done_par:me.id}).eq('id',aid);
+  if(r.error){ toast('Erreur'); return; }
+  await loadAll();
+}
+
+function envoyerLien(did){
+  var d = D.dossiers.find(function(x){return x.id===did;}); if(!d) return;
+  var body = 'Bonjour '+d.client_nom+', suivez la préparation de votre pose EUROSOM et échangez avec nous ici : '+lienClient(d)+' — EUROSOM';
+  if(d.canal==='sms' && d.client_tel){
+    window.location.href='sms:'+d.client_tel.replace(/\s/g,'')+'?body='+encodeURIComponent(body);
+  } else if(d.client_email){
+    window.location.href='mailto:'+d.client_email+'?subject='+encodeURIComponent('EUROSOM — Suivi de votre pose')+'&body='+encodeURIComponent(body);
+  } else toast('Aucun contact renseigné');
+}
+
+function copyLink(id){
+  var inp = document.getElementById(id);
+  inp.select(); inp.setSelectionRange(0,999);
+  try{ navigator.clipboard.writeText(inp.value); }catch(e){ document.execCommand('copy'); }
+  toast('Lien copié');
+}
+
+/* ================= CRÉATION ================= */
+var prodRows = 0;
+function openCreate(){
+  createdDossier = null;
+  document.getElementById('c-result').classList.add('hidden');
+  document.getElementById('c-btn').classList.remove('hidden');
+  document.getElementById('ov-create').classList.remove('hidden');
+  document.getElementById('c-prods').innerHTML=''; prodRows=0; addProdRow();
+  if(me.role==='admin'){
+    var w = document.getElementById('c-commercial-wrap'); w.classList.remove('hidden');
+    document.getElementById('c-commercial').innerHTML = D.profils.map(function(p){
+      return '<option value="'+p.id+'"'+(p.id===me.id?' selected':'')+'>'+esc(p.nom)+'</option>';
+    }).join('');
+  }
+}
+function closeCreate(){ document.getElementById('ov-create').classList.add('hidden'); if(createdDossier) loadAll(); }
+function onTypeChange(){
+  // le canal suit le type : particulier → sms, charpentier → email
+}
+function addProdRow(){
+  var i = prodRows++;
+  var div = document.createElement('div');
+  div.className='prod-block'; div.id='prod-row-'+i;
+  div.innerHTML =
+    '<div class="field"><label>Famille de produit</label><select id="p-fam-'+i+'">'
+    +Object.keys(FAMILLES).map(function(k){return '<option value="'+k+'">'+FAMILLES[k]+'</option>';}).join('')
+    +'</select></div>'
+    +'<div class="field"><label>Désignation</label><input id="p-des-'+i+'" placeholder="Rideau métallique, Porte de façade…"></div>'
+    +'<div class="field"><label>Localisation sur site</label><input id="p-loc-'+i+'" placeholder="Hangar principal, façade nord…"></div>'
+    +'<div class="field"><label>Annotations spécifiques (une par ligne — deviennent des tâches 📌)</label>'
+    +'<textarea id="p-notes-'+i+'" rows="2" placeholder="Déplacer les bottes de paille côté est"></textarea></div>'
+    +'<button class="btn-sm" onclick="document.getElementById(\'prod-row-'+i+'\').remove()">Retirer ce produit</button>';
+  document.getElementById('c-prods').appendChild(div);
+}
+
+async function createDossier(){
+  var nom = document.getElementById('c-nom').value.trim();
+  if(!nom){ toast('Renseignez le nom du client'); return; }
+  var type = document.getElementById('c-type').value;
+  var btn = document.getElementById('c-btn'); btn.disabled=true; btn.textContent='CRÉATION…';
+
+  var dossier = {
+    client_nom: nom,
+    client_type: type,
+    client_tel: document.getElementById('c-tel').value.trim() || null,
+    client_email: document.getElementById('c-email').value.trim() || null,
+    canal: type==='charpentier' ? 'email' : 'sms',
+    site_adresse: document.getElementById('c-site').value.trim() || null,
+    periode_texte: document.getElementById('c-periode').value.trim() || null,
+    periode_debut: document.getElementById('c-periode-date').value || null,
+    date_pose: document.getElementById('c-date').value || null,
+    commercial_id: me.role==='admin' ? document.getElementById('c-commercial').value : me.id
+  };
+  var rd = await sb.from('dossiers').insert(dossier).select().single();
+  if(rd.error){ btn.disabled=false; btn.textContent='CRÉER LE DOSSIER'; toast('Erreur : '+rd.error.message); return; }
+  var d = rd.data;
+
+  // produits + tâches
+  for(var i=0;i<prodRows;i++){
+    var row = document.getElementById('prod-row-'+i); if(!row) continue;
+    var fam = document.getElementById('p-fam-'+i).value;
+    var des = document.getElementById('p-des-'+i).value.trim() || FAMILLES[fam];
+    var loc = document.getElementById('p-loc-'+i).value.trim() || null;
+    var rp = await sb.from('produits').insert({dossier_id:d.id, famille:fam, designation:des, localisation:loc, ordre:i}).select().single();
+    if(rp.error){ toast('Erreur produit'); continue; }
+    var taches = [], ordre = 0;
+    (PREP_TASKS[fam]||[]).forEach(function(cat){
+      cat.tasks.forEach(function(t){
+        taches.push({produit_id:rp.data.id, dossier_id:d.id, categorie:cat.cat, label:t.label, descr:t.desc||null, is_custom:false, ordre:ordre++});
+      });
+    });
+    document.getElementById('p-notes-'+i).value.split('\n').forEach(function(line){
+      if(line.trim()) taches.push({produit_id:rp.data.id, dossier_id:d.id, categorie:'Spécifique', label:line.trim(), is_custom:true, ordre:ordre++});
+    });
+    if(taches.length){ var rt = await sb.from('taches').insert(taches); if(rt.error) toast('Erreur tâches'); }
+  }
+
+  createdDossier = d;
+  D.dossiers.unshift(d);
+  btn.classList.add('hidden'); btn.disabled=false; btn.textContent='CRÉER LE DOSSIER';
+  document.getElementById('c-link').value = lienClient(d);
+  document.getElementById('c-send-sms').textContent = (d.canal==='sms'?'📱':'✉')+' Envoyer le lien au client';
+  document.getElementById('c-result').classList.remove('hidden');
+  toast('Dossier créé ✓');
+}
+function sendCreatedLink(){ if(createdDossier) envoyerLien(createdDossier.id); }
+
+/* ================= DÉMARRAGE ================= */
+document.getElementById('l-pass').addEventListener('keydown', function(e){ if(e.key==='Enter') login(); });
+init();
+</script>
+</body>
+</html>
