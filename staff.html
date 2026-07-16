@@ -172,6 +172,11 @@ button{font-family:var(--font-body);cursor:pointer}
 
     <div class="sec-title">POSES RÉALISÉES</div>
     <div class="panel" id="dossiers-done"></div>
+
+    <div id="notices-sec" class="hidden">
+      <div class="sec-title">NOTICES DE POSE <span class="interne">ADMIN</span></div>
+      <div class="panel" id="notices"></div>
+    </div>
   </div>
 </div>
 
@@ -238,7 +243,7 @@ var SUIVI_URL = 'https://charleu22640.github.io/eurosom-app/suivi.html';
 var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 var me = null;           // profil connecté {id, nom, role}
-var D = { dossiers:[], produits:[], taches:[], messages:[], alertes:[], profils:[], photos:[] };
+var D = { dossiers:[], produits:[], taches:[], messages:[], alertes:[], profils:[], photos:[], notices:[] };
 var currentDossier = null;
 var createdDossier = null;
 
@@ -356,9 +361,10 @@ async function loadAll(){
     sb.from('messages').select('*').order('created_at'),
     sb.from('alertes').select('*'),
     sb.from('profils').select('*'),
-    sb.from('chantier_photos').select('*').order('created_at')
+    sb.from('chantier_photos').select('*').order('created_at'),
+    sb.from('notices').select('*').order('famille')
   ]);
-  var names=['dossiers','produits','taches','messages','alertes','profils','photos'];
+  var names=['dossiers','produits','taches','messages','alertes','profils','photos','notices'];
   for(var i=0;i<rs.length;i++){
     if(rs[i].error){ toast('Erreur de chargement ('+names[i]+')'); return; }
     D[names[i]] = rs[i].data;
@@ -458,6 +464,7 @@ function render(){
     || '<div class="empty">Aucun dossier en cours. Créez le premier !</div>';
   document.getElementById('dossiers-done').innerHTML = faits.slice(0,10).map(rowDossier).join('')
     || '<div class="empty">Aucune pose réalisée pour l\'instant.</div>';
+  renderNotices();
 }
 
 function rowDossier(d){
@@ -736,6 +743,49 @@ async function delPhoto(pid){
   if(r.error){ toast('Erreur'); return; }
   D.photos = D.photos.filter(function(x){return x.id!==pid;});
   renderDetail(currentDossier);
+}
+
+/* ---------- Notices de pose (admin) ---------- */
+function renderNotices(){
+  if(!me || me.role!=='admin') return;
+  document.getElementById('notices-sec').classList.remove('hidden');
+  var rows = D.notices.map(function(n){
+    return '<div class="row" style="cursor:default">'
+      +'<span class="tag info">'+esc(FAMILLES[n.famille]||n.famille)+'</span>'
+      +'<div class="main"><b>'+esc(n.titre)+'</b></div>'
+      +'<a class="btn-sm" href="'+esc(n.url)+'" target="_blank" style="text-decoration:none;color:inherit">Voir</a>'
+      +'<button class="btn-sm" onclick="delNotice(\''+n.id+'\')">Suppr.</button></div>';
+  }).join('');
+  if(!D.notices.length) rows = '<div class="empty">Aucune notice pour l\'instant. Ajoutez vos PDF ci-dessous — ils apparaîtront automatiquement sur la page des clients concernés.</div>';
+  rows += '<div class="row" style="cursor:default;flex-wrap:wrap;gap:8px;background:#fafafa">'
+    +'<select id="n-fam" style="border:1px solid var(--border);border-radius:6px;padding:8px;font-family:var(--font-body)">'
+    +Object.keys(FAMILLES).map(function(k){return '<option value="'+k+'">'+FAMILLES[k]+'</option>';}).join('')
+    +'</select>'
+    +'<input id="n-titre" placeholder="Titre (ex : Conditions de pose SOMROLLER)" style="flex:1;min-width:180px;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:var(--font-body)">'
+    +'<button class="btn-sm primary" onclick="document.getElementById(\'n-file\').click()">📄 Choisir le PDF</button>'
+    +'<input type="file" id="n-file" accept=".pdf,application/pdf" style="display:none" onchange="addNotice(this)">'
+    +'</div>';
+  document.getElementById('notices').innerHTML = rows;
+}
+async function addNotice(inp){
+  var f = inp.files && inp.files[0]; inp.value='';
+  if(!f) return;
+  if(f.size > 5*1024*1024){ toast('PDF trop lourd (max 5 Mo)'); return; }
+  var titre = document.getElementById('n-titre').value.trim() || f.name.replace(/\.pdf$/i,'');
+  var fam = document.getElementById('n-fam').value;
+  toast('Envoi du PDF…');
+  var url = await uploadPj({blob:f, type:'application/pdf', nom:f.name});
+  if(!url){ toast('Envoi impossible'); return; }
+  var r = await sb.from('notices').insert({famille:fam, titre:titre, url:url, profil_id:me.id}).select().single();
+  if(r.error){ toast('Erreur (réservé admin)'); return; }
+  D.notices.push(r.data); renderNotices(); toast('Notice ajoutée ✓');
+}
+async function delNotice(id){
+  if(!confirm('Supprimer cette notice ? Elle disparaîtra des pages clients.')) return;
+  var r = await sb.from('notices').delete().eq('id',id);
+  if(r.error){ toast('Erreur'); return; }
+  D.notices = D.notices.filter(function(x){return x.id!==id;});
+  renderNotices();
 }
 
 /* ================= RELANCES ================= */
