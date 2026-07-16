@@ -745,7 +745,35 @@ function prepClientBlock(){
     // Remarques
     +'<div class="field" style="margin-top:10px"><label>Remarques</label>'
     +'<textarea id="prep-remarques" placeholder="Notes spécifiques au chantier..." style="min-height:60px"></textarea>'
-    +'</div></div>';
+    +'</div>'
+
+    // Suivi client en ligne
+    +'<div style="margin-top:16px;padding:12px;border:2px solid #96281b;border-radius:10px;background:#fdf6f5">'
+    +'<div style="font-weight:700;color:#96281b;font-size:13px;letter-spacing:.5px;margin-bottom:8px">&#9729;&#65039; SUIVI CLIENT EN LIGNE</div>'
+    +'<div class="row2">'
+    +'<div class="field"><label>Type de client</label><select id="suivi-type"><option value="particulier">Particulier (SMS)</option><option value="charpentier">Charpentier / Pro (email)</option></select></div>'
+    +'<div class="field"><label>P&eacute;riode pr&eacute;visionnelle</label><input type="text" id="suivi-periode" placeholder="semaine du 3 ao&ucirc;t"></div>'
+    +'</div>'
+    +'<div class="field"><label>D&eacute;but de p&eacute;riode (pour les alertes de relance)</label><input type="date" id="suivi-periode-date"></div>'
+    +'<div id="suivi-login" style="display:none;margin:8px 0;padding:10px;background:#fff;border-radius:8px;border:1px solid #ddd">'
+    +'<div style="font-size:12px;font-weight:700;color:#96281b;margin-bottom:6px">Connexion Eurosom requise</div>'
+    +'<div class="row2">'
+    +'<div class="field"><label>Email</label><input type="email" id="suivi-email" autocomplete="username"></div>'
+    +'<div class="field"><label>Mot de passe</label><input type="password" id="suivi-pass" autocomplete="current-password"></div>'
+    +'</div>'
+    +'<button type="button" onclick="suiviLogin()" style="background:#4a4a4a;color:#fff;border:none;border-radius:8px;padding:10px 16px;font-weight:700;cursor:pointer">SE CONNECTER</button>'
+    +'</div>'
+    +'<button type="button" id="suivi-btn" onclick="creerDossierSuivi()" style="width:100%;background:#96281b;color:#fff;border:none;border-radius:8px;padding:12px;font-weight:700;font-size:14px;letter-spacing:1px;cursor:pointer;margin-top:4px">CR&Eacute;ER LE DOSSIER DE SUIVI</button>'
+    +'<div id="suivi-result" style="display:none;margin-top:10px">'
+    +'<label style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Lien de suivi du client</label>'
+    +'<div style="display:flex;gap:6px;margin-top:4px">'
+    +'<input id="suivi-link" readonly style="flex:1;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;color:#666;background:#fafafa">'
+    +'<button type="button" onclick="copierLienSuivi()" style="border:1px solid #ddd;background:#f2f2f2;border-radius:6px;padding:0 12px;cursor:pointer;font-weight:600">Copier</button>'
+    +'</div>'
+    +'<button type="button" onclick="envoyerLienSuivi()" style="width:100%;background:#27ae60;color:#fff;border:none;border-radius:8px;padding:11px;font-weight:700;font-size:13px;letter-spacing:.5px;cursor:pointer;margin-top:8px">&#128241; ENVOYER LE LIEN AU CLIENT</button>'
+    +'</div>'
+    +'</div>'
+    +'</div>';
 }
 
 // =========================================================
@@ -1754,184 +1782,152 @@ function showToast(msg){var t=document.getElementById('toast');t.textContent=msg
 
 updateBadge();
 </script>
-</body>
-</html>
-    {id:'elec',     label:'Prévoir l\'alimentation électrique', desc:'Prise 220V à moins de 10 m. Vérifier la conformité de l\'installation.'},
-    {id:'capot',    label:'Préparer l\'emplacement du capot', desc:'Traverse haute accessible et solide. Prévoir fixations si support métallique.'},
-    {id:'coulisses',label:'Préparer coulisses et supports',  desc:'Vérifier alignement des montants. Supports plans et d\'aplomb.'},
-    {id:'nacelle',  label:'Organiser la nacelle si nécessaire', desc:'Commander et confirmer la disponibilité pour la date de pose.'},
-    {id:'contact',  label:'Désigner un responsable sur place', desc:'Une personne disponible le jour de la pose pour réceptionner les travaux.'},
-  ],
-  somogliss:[
-    {id:'dégager',  label:'Dégager la zone de pose',        desc:'Libérer la zone sur 2 m de chaque côté.'},
-    {id:'acces',    label:'Assurer l\'accès au chantier',    desc:'Accès camion. Signaler restrictions de hauteur/largeur.'},
-    {id:'elec',     label:'Prévoir l\'alimentation électrique', desc:'Prise 220V à moins de 10 m.'},
-    {id:'rail',     label:'Vérifier la traverse haute pour le rail', desc:'Planéité sur toute la longueur. Doit supporter rail + rideau.'},
-    {id:'barriere', label:'Positionner les barrières de sécurité', desc:'Prévoir l\'espace pour la partie fixe et le coulissement ouvert.'},
-    {id:'sol',      label:'Vérifier la planéité du sol',    desc:'Sol plan sous toute la longueur. Signaler tout dénivelé.'},
-    {id:'contact',  label:'Désigner un responsable sur place', desc:'Une personne disponible le jour de la pose.'},
-  ],
-  somroller:[
-    {id:'dégager',  label:'Dégager la zone de pose',        desc:'Libérer la zone sur 2 m de chaque côté.'},
-    {id:'acces',    label:'Assurer l\'accès au chantier',    desc:'Accès camion. Signaler restrictions.'},
-    {id:'elec',     label:'Prévoir l\'alimentation électrique', desc:'Prise 220V/triphasé selon config, à moins de 10 m.'},
-    {id:'traverse', label:'Vérifier la traverse haute',     desc:'Horizontale et solide pour supporter l\'axe et le rideau.'},
-    {id:'poteaux',  label:'Préparer les poteaux',           desc:'D\'aplomb et espacés selon plan. Prévoir platines si métal.'},
-    {id:'guides',   label:'Préparer les points de fixation des guides', desc:'Marquer emplacements guides au sol et en haut.'},
-    {id:'nacelle',  label:'Organiser la nacelle',           desc:'Commander et confirmer la disponibilité pour la date de pose.'},
-    {id:'contact',  label:'Désigner un responsable sur place', desc:'Une personne disponible le jour de la pose.'},
-  ],
-  classique:[
-    {id:'dégager',  label:'Dégager la zone de pose',        desc:'Libérer la zone sur 2 m de chaque côté.'},
-    {id:'acces',    label:'Assurer l\'accès au chantier',    desc:'Accès camion. Signaler restrictions.'},
-    {id:'elec',     label:'Prévoir le câblage électrique moteur', desc:'220V ou triphasé selon config. Câble posé jusqu\'à l\'emplacement moteur.'},
-    {id:'traverse', label:'Vérifier la traverse haute',     desc:'Horizontale et solide sur toute la largeur.'},
-    {id:'poteaux',  label:'Préparer les poteaux',           desc:'D\'aplomb et en place avant l\'intervention.'},
-    {id:'nacelle',  label:'Organiser la nacelle',           desc:'Commander et confirmer la disponibilité pour la date de pose.'},
-    {id:'contact',  label:'Désigner un responsable sur place', desc:'Une personne disponible le jour de la pose.'},
-  ]
-};
 
-var prepCustomTasks = [];
+<!-- ===== INTEGRATION SUIVI CLIENT (Supabase) ===== -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+var SUIVI_SB_URL = 'https://moyafpnzkpicpzvfwtcn.supabase.co';
+var SUIVI_SB_KEY = 'sb_publishable_ucDQwKeyvraDTvWOnEnSbA_vD19JtF6';
+var SUIVI_URL = 'https://charleu22640.github.io/eurosom-app/suivi.html';
+var sbSuivi = window.supabase.createClient(SUIVI_SB_URL, SUIVI_SB_KEY);
+var suiviDossier = null;
+var SUIVI_LABELS = {bvr:'BVR', somogliss:'SOMOGLISS', somroller:'SOMROLLER', classique:'Rideau Classique'};
 
-function initPrepTasks(code){
-  prepCustomTasks = [];
-  renderPrepTasks(code);
-}
-
-function renderPrepTasks(code){
-  var tasks = PREP_TASKS[code] || PREP_TASKS['bvr'];
-  var html = tasks.map(function(t){
-    return '<div class="task-row">'
-      +'<div class="task-left">'
-      +'<div class="task-label">'+t.label+'</div>'
-      +'<div class="task-desc">'+t.desc+'</div>'
-      +'</div>'
-      +'<div class="task-date"><label>Avant le</label>'
-      +'<input type="text" id="ptask-'+t.id+'" placeholder="jj/mm" class="task-date-input">'
-      +'</div></div>';
-  }).join('');
-  // Tâches custom
-  html += prepCustomTasks.map(function(t,i){
-    return '<div class="task-row">'
-      +'<div class="task-left"><div class="task-label">'+t+'</div></div>'
-      +'<div class="task-date" style="flex-direction:row;align-items:center;gap:6px">'
-      +'<input type="text" id="pctask-'+i+'" placeholder="jj/mm" style="width:90px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px">'
-      +'<button class="task-delete" onclick="removePrepTask('+i+')">&#10005;</button>'
-      +'</div></div>';
-  }).join('');
-  var el = document.getElementById('prep-tasks-list');
-  if(el) el.innerHTML = html;
-}
-
-function addPrepTask(){
-  var input = document.getElementById('prep-custom-input');
-  if(!input || !input.value.trim()) return;
-  prepCustomTasks.push(input.value.trim());
-  input.value = '';
-  renderPrepTasks(currentProduit);
-}
-
-function removePrepTask(i){
-  prepCustomTasks.splice(i,1);
-  renderPrepTasks(currentProduit);
-}
-
-function collectPrepData(){
-  var tasks = PREP_TASKS[currentProduit] || [];
-  var result = [];
-  tasks.forEach(function(t){
-    var el = document.getElementById('ptask-'+t.id);
-    result.push({label:t.label, desc:t.desc, date:el?el.value:''});
+async function suiviLogin(){
+  var r = await sbSuivi.auth.signInWithPassword({
+    email: gv('suivi-email'),
+    password: document.getElementById('suivi-pass').value
   });
-  prepCustomTasks.forEach(function(t,i){
-    var el = document.getElementById('pctask-'+i);
-    result.push({label:t, desc:'', date:el?el.value:''});
-  });
-  return {
-    date_pose: gv('prep-date-pose'),
-    tel: gv('prep-tel'),
-    email: gv('prep-email'),
-    remarques: gv('prep-remarques'),
-    tasks: result
-  };
+  if(r.error){ showToast('Email ou mot de passe incorrect'); return; }
+  document.getElementById('suivi-login').style.display = 'none';
+  showToast('Connecte \u2713');
+  creerDossierSuivi();
 }
 
-function buildPrepPreview(prep, client, commercial, produit){
-  if(!prep || !prep.tasks || !prep.tasks.length) return '';
-  var h = '<tr><td colspan="6" style="height:6px;border:none;background:#ebebeb;padding:0"></td></tr>';
-  h += '<tr><td colspan="6" style="font-size:11px;font-weight:700;padding:5px 6px;background:#fff3e0;border:1px solid #e0a060;color:#d35400">&#128203; PRÉPARATION CLIENT — À réaliser avant la pose</td></tr>';
-  h += '<tr>'
-    +'<td colspan="2" style="font-size:8.5px;padding:3px 6px;border:0.5px solid #ddd">Client : <strong>'+(client||'—')+'</strong></td>'
-    +'<td colspan="2" style="font-size:8.5px;padding:3px 6px;border:0.5px solid #ddd">Date de pose : <strong style="color:#d35400">'+(prep.date_pose||'—')+'</strong></td>'
-    +'<td colspan="2" style="font-size:8.5px;padding:3px 6px;border:0.5px solid #ddd">Tél : '+(prep.tel||'—')+'</td>'
-    +'</tr>';
-  h += '<tr>'
-    +'<th colspan="4" style="padding:3px 6px;background:#f5f5f5;border:0.5px solid #bbb;text-align:left;font-size:8px">Tâche à effectuer</th>'
-    +'<th style="padding:3px 6px;background:#f5f5f5;border:0.5px solid #bbb;text-align:center;font-size:8px">Avant le</th>'
-    +'<th style="padding:3px 6px;background:#f5f5f5;border:0.5px solid #bbb;text-align:center;font-size:8px">&#9744; Fait</th>'
-    +'</tr>';
-  prep.tasks.forEach(function(t){
-    h += '<tr>'
-      +'<td colspan="4" style="padding:3px 6px;border:0.5px solid #ddd;font-size:8px;vertical-align:top">'
-      +'<strong>'+t.label+'</strong>'+(t.desc?'<br><span style="color:#888;font-size:7px">'+t.desc+'</span>':'')
-      +'</td>'
-      +'<td style="padding:3px 6px;border:0.5px solid #ddd;text-align:center;font-weight:700;color:#d35400;font-size:9px">'+(t.date||'—')+'</td>'
-      +'<td style="padding:3px 6px;border:0.5px solid #ddd;text-align:center;font-size:13px">&#9744;</td>'
-      +'</tr>';
+function suiviMesuresResume(d){
+  var map = {lji:'LJI', hst:'HST', hht:'HHT', lt:'LT', hji:'HJI', ldc:'LDC', coloris:'Coloris', produit:'Produit'};
+  var parts = [];
+  Object.keys(map).forEach(function(k){ if(d[k]) parts.push(map[k]+' '+d[k]); });
+  return parts.join(' \u00b7 ') || null;
+}
+
+function suiviTaches(famille){
+  var out = [], src = PREP_TASKS[famille] || [], ordre = 0;
+  src.forEach(function(e){
+    if(e && e.tasks){
+      var cat = (e.cat || '').replace(/^[^A-Za-z\u00C0-\u024F]+\s*/, '');
+      e.tasks.forEach(function(t){
+        out.push({categorie: cat || null, label: t.label, descr: t.desc || null, is_custom: false, ordre: ordre++});
+      });
+    } else if(e && e.label){
+      out.push({categorie: null, label: e.label, descr: e.desc || null, is_custom: false, ordre: ordre++});
+    }
   });
-  if(prep.remarques){
-    h += '<tr><td colspan="6" style="padding:4px 6px;border:0.5px solid #ddd;font-size:8px;background:#fffde7">Remarques : '+prep.remarques+'</td></tr>';
+  return out;
+}
+
+function suiviDataURLBlob(dataURL){
+  var parts = dataURL.split(','), mime = (parts[0].match(/:(.*?);/)||[])[1] || 'image/png';
+  var bin = atob(parts[1]), arr = new Uint8Array(bin.length);
+  for(var i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], {type:mime});
+}
+
+async function creerDossierSuivi(){
+  var s = await sbSuivi.auth.getSession();
+  if(!s.data.session){
+    document.getElementById('suivi-login').style.display = 'block';
+    showToast('Connectez-vous avec votre compte Eurosom');
+    return;
   }
-  // Signatures
-  h += '<tr><td colspan="3" style="padding:18px 6px 4px;border:none;text-align:center"><div style="border-top:1px solid #555;padding-top:3px;font-size:7.5px;color:#888">Signature client</div></td>'
-    +'<td colspan="3" style="padding:18px 6px 4px;border:none;text-align:center"><div style="border-top:1px solid #555;padding-top:3px;font-size:7.5px;color:#888">Signature commercial — '+commercial+'</div></td></tr>';
-  return h;
-}
-
-function buildPrepMailBody(prep, d){
-  if(!prep || !prep.tasks || !prep.tasks.length) return '';
-  var lines = [
-    '',
-    '--- PRÉPARATION CLIENT ---',
-    'Date de pose prévue : '+(prep.date_pose||'—'),
-    'Tél client : '+(prep.tel||'—'),
-    '',
-    'Tâches à réaliser avant la pose :'
-  ];
-  prep.tasks.forEach(function(t){
-    lines.push('• '+t.label+(t.date?' → avant le '+t.date:'')+' ☐');
-  });
-  if(prep.remarques) lines.push('\nRemarques : '+prep.remarques);
-  return lines.join('\n');
-}
-
-function buildPrepSMS(prep, produit, client){
-  if(!prep || !prep.tasks || !prep.tasks.length) return '';
-  var lines = ['Bonjour,',
-    'Voici les préparations pour la pose de votre '+produit+' prévue le '+(prep.date_pose||'—')+' :'];
-  prep.tasks.forEach(function(t){
-    lines.push('• '+t.label+(t.date?' (avant le '+t.date+')':''));
-  });
-  if(prep.remarques) lines.push('Note : '+prep.remarques);
-  lines.push('Merci — EUROSOM');
-  return lines.join('\n');
-}
-
-function sendPrepSMS(){
-  var prep = collectPrepData();
   var d = collectForm();
-  if(!prep.tel){showToast('Renseignez le téléphone client');return;}
-  var tel = prep.tel.replace(/\s/g,'');
-  var labels={bvr:'BVR',somogliss:'SOMOGLISS',somroller:'SOMROLLER',classique:'Classique'};
-  window.location.href='sms:'+tel+'?body='+encodeURIComponent(buildPrepSMS(prep, labels[currentProduit], d.client));
+  var prep = d.prep || {};
+  if(!d.client){ showToast('Renseignez le nom du client (en haut de la feuille)'); return; }
+
+  var btn = document.getElementById('suivi-btn');
+  btn.disabled = true; btn.textContent = 'CREATION EN COURS\u2026';
+
+  var type = gv('suivi-type') || 'particulier';
+  var notes = [];
+  if(d.affaire) notes.push('N\u00b0 affaire : ' + d.affaire);
+  if(d.metreur) notes.push('Metreur : ' + d.metreur);
+  if(prep.remarques) notes.push(prep.remarques);
+
+  var rd = await sbSuivi.from('dossiers').insert({
+    client_nom: d.client,
+    client_type: type,
+    client_tel: prep.tel || null,
+    client_email: prep.email || null,
+    canal: type === 'charpentier' ? 'email' : 'sms',
+    periode_texte: gv('suivi-periode') || prep.date_pose || null,
+    periode_debut: gv('suivi-periode-date') || null,
+    notes_internes: notes.join('\n') || null,
+    commercial_id: s.data.session.user.id
+  }).select().single();
+
+  if(rd.error){
+    btn.disabled = false; btn.textContent = 'CREER LE DOSSIER DE SUIVI';
+    showToast('Erreur : ' + rd.error.message);
+    return;
+  }
+  suiviDossier = rd.data;
+
+  var rp = await sbSuivi.from('produits').insert({
+    dossier_id: suiviDossier.id,
+    famille: currentProduit,
+    designation: SUIVI_LABELS[currentProduit] || currentProduit,
+    infos_technique: suiviMesuresResume(d),
+    ordre: 0
+  }).select().single();
+
+  if(!rp.error){
+    var taches = suiviTaches(currentProduit);
+    prepCustomTasks.forEach(function(t){
+      taches.push({categorie:'Specifique', label:t, descr:null, is_custom:true, ordre:taches.length});
+    });
+    taches.forEach(function(t){ t.produit_id = rp.data.id; t.dossier_id = suiviDossier.id; });
+    if(taches.length) await sbSuivi.from('taches').insert(taches);
+  }
+
+  try{
+    var ph = getSketchData();
+    if(ph){
+      var blob = suiviDataURLBlob(ph);
+      var a = new Uint8Array(16); crypto.getRandomValues(a);
+      var chemin = Array.prototype.map.call(a,function(b){return ('0'+b.toString(16)).slice(-2);}).join('') + '.jpg';
+      var up = await sbSuivi.storage.from('pieces-jointes').upload(chemin, blob, {contentType: blob.type});
+      if(!up.error){
+        var url = sbSuivi.storage.from('pieces-jointes').getPublicUrl(chemin).data.publicUrl;
+        await sbSuivi.from('chantier_photos').insert({dossier_id: suiviDossier.id, url: url, legende: 'Photo de visite (annotee)', profil_id: s.data.session.user.id});
+      }
+    }
+  }catch(e){ /* photo facultative */ }
+
+  btn.style.display = 'none';
+  document.getElementById('suivi-link').value = SUIVI_URL + '?t=' + suiviDossier.token;
+  document.getElementById('suivi-result').style.display = 'block';
+  showToast('\u2713 Dossier de suivi cree');
 }
 
+function copierLienSuivi(){
+  var inp = document.getElementById('suivi-link');
+  inp.select(); inp.setSelectionRange(0,999);
+  try{ navigator.clipboard.writeText(inp.value); }catch(e){ document.execCommand('copy'); }
+  showToast('Lien copie');
+}
 
-
-function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2800);}
-
-updateBadge();
+function envoyerLienSuivi(){
+  if(!suiviDossier) return;
+  var lien = SUIVI_URL + '?t=' + suiviDossier.token;
+  var body = 'Bonjour ' + suiviDossier.client_nom + ', suivez la preparation de votre pose EUROSOM et echangez avec nous ici : ' + lien + ' \u2014 EUROSOM';
+  if(suiviDossier.canal === 'sms' && suiviDossier.client_tel){
+    window.location.href = 'sms:' + suiviDossier.client_tel.replace(/\s/g,'') + '?body=' + encodeURIComponent(body);
+  } else if(suiviDossier.client_email){
+    window.location.href = 'mailto:' + suiviDossier.client_email + '?subject=' + encodeURIComponent('EUROSOM \u2014 Suivi de votre pose') + '&body=' + encodeURIComponent(body);
+  } else {
+    showToast('Aucun telephone/email renseigne dans la preparation');
+  }
+}
 </script>
 </body>
 </html>
