@@ -113,6 +113,16 @@ button{font-family:var(--font-body);cursor:pointer}
 .chat-input{display:flex;gap:8px}
 .chat-input textarea{flex:1;border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-family:var(--font-body);font-size:14.5px;resize:none;height:42px;outline:none}
 .chat-input button{background:var(--red);border:none;color:#fff;font-family:var(--font-head);font-size:14px;font-weight:700;letter-spacing:1px;padding:0 16px;border-radius:8px}
+.chat-input .attach{background:var(--gray-light);border:1px solid var(--border);border-radius:8px;width:42px;font-size:17px;color:var(--gray-dark);padding:0;flex-shrink:0}
+.msg img{max-width:100%;max-height:240px;border-radius:8px;display:block;margin-top:5px;cursor:pointer}
+.msg a.file{display:inline-flex;align-items:center;gap:6px;margin-top:5px;font-size:13px;color:var(--red-dark);font-weight:600;text-decoration:none;background:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 8px}
+.pj-chip{display:flex;align-items:center;gap:8px;padding:6px 10px;margin-bottom:8px;background:var(--amber-bg);border-radius:8px;font-size:12.5px;color:#7a4a10}
+.pj-chip button{background:none;border:none;font-size:14px;color:#7a4a10;margin-left:auto;padding:0}
+.photos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;margin-top:10px}
+.photos-grid .ph{position:relative;border-radius:8px;overflow:hidden;aspect-ratio:1;background:#eee}
+.photos-grid img{width:100%;height:100%;object-fit:cover;cursor:pointer;display:block}
+.photos-grid .del{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:5px;font-size:11px;padding:2px 6px;cursor:pointer}
+.interne{font-family:var(--font-body);font-weight:600;font-size:10.5px;color:#fff;background:var(--gray);border-radius:8px;padding:2px 8px;letter-spacing:.5px;vertical-align:2px}
 
 .prod-block{border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;background:#fafafa}
 .btn-add{background:none;border:2px dashed var(--gray-mid);border-radius:10px;width:100%;padding:10px;font-size:14px;font-weight:600;color:#777}
@@ -191,6 +201,7 @@ button{font-family:var(--font-body);cursor:pointer}
         <div class="field"><label>Téléphone</label><input id="c-tel" placeholder="06 00 00 00 00"></div>
         <div class="field"><label>Email</label><input id="c-email" placeholder="client@exemple.fr"></div>
         <div class="field"><label>Adresse du chantier</label><input id="c-site" placeholder="ZA des Éoliennes, Pierrelatte"></div>
+        <div class="field"><label>Notes internes (invisibles pour le client)</label><textarea id="c-notes" rows="2" placeholder="Accès par le portail nord, chien sur site…"></textarea></div>
       </div>
       <div class="card">
         <h3>POSE</h3>
@@ -227,7 +238,7 @@ var SUIVI_URL = 'https://charleu22640.github.io/eurosom-app/suivi.html';
 var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 var me = null;           // profil connecté {id, nom, role}
-var D = { dossiers:[], produits:[], taches:[], messages:[], alertes:[], profils:[] };
+var D = { dossiers:[], produits:[], taches:[], messages:[], alertes:[], profils:[], photos:[] };
 var currentDossier = null;
 var createdDossier = null;
 
@@ -344,9 +355,10 @@ async function loadAll(){
     sb.from('taches').select('*').order('ordre'),
     sb.from('messages').select('*').order('created_at'),
     sb.from('alertes').select('*'),
-    sb.from('profils').select('*')
+    sb.from('profils').select('*'),
+    sb.from('chantier_photos').select('*').order('created_at')
   ]);
-  var names=['dossiers','produits','taches','messages','alertes','profils'];
+  var names=['dossiers','produits','taches','messages','alertes','profils','photos'];
   for(var i=0;i<rs.length;i++){
     if(rs[i].error){ toast('Erreur de chargement ('+names[i]+')'); return; }
     D[names[i]] = rs[i].data;
@@ -502,6 +514,22 @@ function renderDetail(id){
     +'<button class="btn-sm primary" onclick="envoyerLien(\''+d.id+'\')">'+(d.canal==='sms'?'📱':'✉')+' Envoyer</button></div>'
     +'</div>';
 
+  // chantier (interne)
+  var photos = D.photos.filter(function(ph){return ph.dossier_id===d.id;});
+  h += '<div class="card"><h3>CHANTIER <span class="interne">INTERNE — INVISIBLE CLIENT</span></h3>'
+    +'<div class="field"><label>Notes internes (visite, accès, particularités…)</label>'
+    +'<textarea id="d-notes" rows="3">'+esc(d.notes_internes||'')+'</textarea></div>'
+    +'<button class="btn-sm" onclick="saveNotes(\''+d.id+'\')">Enregistrer les notes</button>'
+    +'<div class="photos-grid">'
+    +photos.map(function(ph){
+      return '<div class="ph"><img src="'+esc(ph.url)+'" alt="" onclick="window.open(this.src)">'
+        +'<button class="del" onclick="delPhoto(\''+ph.id+'\')">✕</button></div>';
+    }).join('')
+    +'</div>'
+    +'<div style="margin-top:10px"><button class="btn-sm" onclick="document.getElementById(\'ph-file\').click()">📷 Ajouter une photo du chantier</button>'
+    +'<input type="file" id="ph-file" accept="image/*" style="display:none" onchange="addPhoto(this,\''+d.id+'\')"></div>'
+    +'</div>';
+
   // date de pose
   h += '<div class="card"><h3>DATE DE POSE</h3>';
   if(d.date_pose){
@@ -525,6 +553,10 @@ function renderDetail(id){
     h += '<div class="card"><h3>'+esc(p.designation).toUpperCase()
       +' <span style="font-family:var(--font-body);font-weight:400;font-size:12.5px;color:#888">'
       +esc(FAMILLES[p.famille]||p.famille)+(p.localisation?' — '+esc(p.localisation):'')+' · '+done+'/'+taches.length+'</span></h3>';
+    h += '<div style="display:flex;gap:6px;margin-bottom:8px">'
+      +'<input id="pt-'+p.id+'" value="'+esc(p.infos_technique||'').replace(/"/g,'&quot;')+'" placeholder="Infos techniques (dimensions, moteur, couleur…) — interne"'
+      +' style="flex:1;border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-family:var(--font-body);font-size:13px;background:#fafafa">'
+      +'<button class="btn-sm" onclick="saveProdInfo(\''+p.id+'\')">OK</button></div>';
     taches.forEach(function(t){
       h += '<div class="task-row'+(t.done?' done':'')+'" onclick="staffToggle(\''+t.id+'\','+(!t.done)+')">'
         +'<div class="box">'+(t.done?'✓':'')+'</div>'
@@ -546,10 +578,15 @@ function renderDetail(id){
     var when = new Date(m.created_at).toLocaleDateString('fr-FR',{day:'numeric',month:'short'})
       +' '+new Date(m.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
     var who = m.sender_type==='client' ? esc(m.sender_nom) : esc(m.sender_nom)+' · Eurosom';
-    h += '<div class="msg '+m.sender_type+'"><div class="who">'+who+'</div>'+esc(m.contenu)
+    h += '<div class="msg '+m.sender_type+'"><div class="who">'+who+'</div>'+esc(m.contenu)+pjHtml(m)
       +'<div class="when">'+when+'</div></div>';
   });
-  h += '</div><div class="chat-input"><textarea id="d-msg-input" placeholder="Répondre au client…" maxlength="2000"></textarea>'
+  h += '</div>'
+    +'<div class="pj-chip" id="d-pj-chip" style="display:none">📎 <span id="d-pj-nom"></span><button onclick="clearStaffPj()">✕</button></div>'
+    +'<div class="chat-input">'
+    +'<button class="attach" onclick="document.getElementById(\'d-pj-file\').click()" title="Joindre">📎</button>'
+    +'<input type="file" id="d-pj-file" accept="image/*,.pdf" style="display:none" onchange="chooseStaffPj(this)">'
+    +'<textarea id="d-msg-input" placeholder="Répondre au client…" maxlength="2000"></textarea>'
     +'<button onclick="staffSend(\''+d.id+'\')">ENVOYER</button></div></div>';
 
   document.getElementById('d-body').innerHTML = h;
@@ -574,13 +611,76 @@ async function addTask(pid, did){
   renderDetail(currentDossier);
 }
 
+/* ---------- Pièces jointes ---------- */
+var staffPj = null;
+function chooseStaffPj(inp){
+  var f = inp.files && inp.files[0]; inp.value='';
+  if(!f) return;
+  preparerFichier(f).then(function(p){
+    staffPj = p;
+    document.getElementById('d-pj-nom').textContent = p.nom;
+    document.getElementById('d-pj-chip').style.display = 'flex';
+  }).catch(function(){ toast('Fichier trop lourd (max 5 Mo) ou non pris en charge'); });
+}
+function clearStaffPj(){
+  staffPj = null;
+  var c = document.getElementById('d-pj-chip'); if(c) c.style.display='none';
+}
+function preparerFichier(file){
+  return new Promise(function(resolve, reject){
+    if(file.type.indexOf('image/')===0 && file.type!=='image/gif'){
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function(){
+        var max=1600, w=img.width, h=img.height;
+        if(w>max||h>max){ var r=Math.min(max/w,max/h); w=Math.round(w*r); h=Math.round(h*r); }
+        var c=document.createElement('canvas'); c.width=w; c.height=h;
+        c.getContext('2d').drawImage(img,0,0,w,h);
+        URL.revokeObjectURL(url);
+        c.toBlob(function(blob){
+          if(!blob){reject();return;}
+          resolve({blob:blob, type:'image/jpeg', nom:file.name.replace(/\.[^.]+$/,'')+'.jpg'});
+        },'image/jpeg',0.82);
+      };
+      img.onerror = reject;
+      img.src = url;
+    } else {
+      if(file.size > 5*1024*1024){ reject(); return; }
+      resolve({blob:file, type:file.type||'application/octet-stream', nom:file.name});
+    }
+  });
+}
+async function uploadPj(p){
+  var a = new Uint8Array(16); crypto.getRandomValues(a);
+  var ext = p.type==='image/jpeg' ? '.jpg' : (p.nom.match(/\.[^.]+$/)||[''])[0];
+  var chemin = Array.prototype.map.call(a,function(b){return ('0'+b.toString(16)).slice(-2);}).join('')+ext;
+  var r = await sb.storage.from('pieces-jointes').upload(chemin, p.blob, {contentType:p.type});
+  if(r.error) return null;
+  return sb.storage.from('pieces-jointes').getPublicUrl(chemin).data.publicUrl;
+}
+function pjHtml(m){
+  if(!m.fichier_url) return '';
+  if(m.fichier_type && m.fichier_type.indexOf('image/')===0){
+    return '<img src="'+esc(m.fichier_url)+'" alt="" onclick="window.open(this.src)">';
+  }
+  return '<a class="file" href="'+esc(m.fichier_url)+'" target="_blank">📄 '+esc(m.fichier_nom||'Fichier')+'</a>';
+}
+
 async function staffSend(did){
   var inp = document.getElementById('d-msg-input');
-  var txt = inp.value.trim(); if(!txt) return;
+  var txt = inp.value.trim();
+  if(!txt && !staffPj) return;
+  var extra = {fichier_url:null, fichier_nom:null, fichier_type:null};
+  if(staffPj){
+    var url = await uploadPj(staffPj);
+    if(!url){ toast('Envoi du fichier impossible'); return; }
+    extra = {fichier_url:url, fichier_nom:staffPj.nom, fichier_type:staffPj.type};
+  }
   var r = await sb.from('messages').insert({dossier_id:did, sender_type:'staff', sender_nom:me.nom,
-    profil_id:me.id, contenu:txt, lu_par_staff:true}).select().single();
+    profil_id:me.id, contenu: txt || '📎 Pièce jointe', lu_par_staff:true,
+    fichier_url:extra.fichier_url, fichier_nom:extra.fichier_nom, fichier_type:extra.fichier_type}).select().single();
   if(r.error){ toast('Envoi impossible'); return; }
-  D.messages.push(r.data); inp.value='';
+  D.messages.push(r.data); inp.value=''; staffPj=null;
   renderDetail(currentDossier);
 }
 
@@ -598,6 +698,44 @@ async function poseFaite(did){
   var r = await sb.from('dossiers').update({statut:'pose_faite'}).eq('id',did);
   if(r.error){ toast('Erreur'); return; }
   closeDetail(); await loadAll();
+}
+
+/* ---------- Infos chantier (interne) ---------- */
+async function saveNotes(did){
+  var v = document.getElementById('d-notes').value.trim() || null;
+  var r = await sb.from('dossiers').update({notes_internes:v}).eq('id',did);
+  if(r.error){ toast('Erreur — réessayez'); return; }
+  var d = D.dossiers.find(function(x){return x.id===did;}); if(d) d.notes_internes=v;
+  toast('Notes enregistrées ✓');
+}
+async function saveProdInfo(pid){
+  var v = document.getElementById('pt-'+pid).value.trim() || null;
+  var r = await sb.from('produits').update({infos_technique:v}).eq('id',pid);
+  if(r.error){ toast('Erreur — réessayez'); return; }
+  var p = D.produits.find(function(x){return x.id===pid;}); if(p) p.infos_technique=v;
+  toast('Infos produit enregistrées ✓');
+}
+async function addPhoto(inp, did){
+  var f = inp.files && inp.files[0]; inp.value='';
+  if(!f) return;
+  toast('Envoi de la photo…');
+  try{
+    var p = await preparerFichier(f);
+    var url = await uploadPj(p);
+    if(!url){ toast('Envoi impossible'); return; }
+    var r = await sb.from('chantier_photos').insert({dossier_id:did, url:url, profil_id:me.id}).select().single();
+    if(r.error){ toast('Erreur d\'enregistrement'); return; }
+    D.photos.push(r.data);
+    renderDetail(currentDossier);
+    toast('Photo ajoutée ✓');
+  }catch(e){ toast('Photo trop lourde ou non prise en charge'); }
+}
+async function delPhoto(pid){
+  if(!confirm('Supprimer cette photo ?')) return;
+  var r = await sb.from('chantier_photos').delete().eq('id',pid);
+  if(r.error){ toast('Erreur'); return; }
+  D.photos = D.photos.filter(function(x){return x.id!==pid;});
+  renderDetail(currentDossier);
 }
 
 /* ================= RELANCES ================= */
@@ -673,6 +811,7 @@ function addProdRow(){
     +'</select></div>'
     +'<div class="field"><label>Désignation</label><input id="p-des-'+i+'" placeholder="Rideau métallique, Porte de façade…"></div>'
     +'<div class="field"><label>Localisation sur site</label><input id="p-loc-'+i+'" placeholder="Hangar principal, façade nord…"></div>'
+    +'<div class="field"><label>Infos techniques (interne — dimensions, moteur…)</label><input id="p-tech-'+i+'" placeholder="L 4200 × H 3500, moteur triphasé"></div>'
     +'<div class="field"><label>Annotations spécifiques (une par ligne — deviennent des tâches 📌)</label>'
     +'<textarea id="p-notes-'+i+'" rows="2" placeholder="Déplacer les bottes de paille côté est"></textarea></div>'
     +'<button class="btn-sm" onclick="document.getElementById(\'prod-row-'+i+'\').remove()">Retirer ce produit</button>';
@@ -692,6 +831,7 @@ async function createDossier(){
     client_email: document.getElementById('c-email').value.trim() || null,
     canal: type==='charpentier' ? 'email' : 'sms',
     site_adresse: document.getElementById('c-site').value.trim() || null,
+    notes_internes: document.getElementById('c-notes').value.trim() || null,
     periode_texte: document.getElementById('c-periode').value.trim() || null,
     periode_debut: document.getElementById('c-periode-date').value || null,
     date_pose: document.getElementById('c-date').value || null,
@@ -707,7 +847,8 @@ async function createDossier(){
     var fam = document.getElementById('p-fam-'+i).value;
     var des = document.getElementById('p-des-'+i).value.trim() || FAMILLES[fam];
     var loc = document.getElementById('p-loc-'+i).value.trim() || null;
-    var rp = await sb.from('produits').insert({dossier_id:d.id, famille:fam, designation:des, localisation:loc, ordre:i}).select().single();
+    var tech = document.getElementById('p-tech-'+i).value.trim() || null;
+    var rp = await sb.from('produits').insert({dossier_id:d.id, famille:fam, designation:des, localisation:loc, infos_technique:tech, ordre:i}).select().single();
     if(rp.error){ toast('Erreur produit'); continue; }
     var taches = [], ordre = 0;
     (PREP_TASKS[fam]||[]).forEach(function(cat){
