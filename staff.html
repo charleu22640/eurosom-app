@@ -122,6 +122,24 @@ button{font-family:var(--font-body);cursor:pointer}
 .photos-grid .ph{position:relative;border-radius:8px;overflow:hidden;aspect-ratio:1;background:#eee}
 .photos-grid img{width:100%;height:100%;object-fit:cover;cursor:pointer;display:block}
 .photos-grid .del{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:5px;font-size:11px;padding:2px 6px;cursor:pointer}
+.kanban{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:20px}
+.kcol{background:#e3e3e3;border-radius:10px;padding:8px;min-height:80px}
+.kcol-head{display:flex;align-items:center;gap:6px;padding:2px 4px 8px}
+.kcol-head b{font-family:var(--font-head);font-size:14px;font-weight:700;letter-spacing:.4px;flex:1;text-transform:uppercase}
+.kcol-head span{background:#fff;border-radius:9px;font-size:11.5px;font-weight:700;padding:1px 7px;color:var(--gray)}
+.kcol.c1{background:#fbf0e2}.kcol.c1 .kcol-head b{color:var(--amber-dark)}
+.kcol.c2{background:#f7e6e4}.kcol.c2 .kcol-head b{color:var(--red-dark)}
+.kcol.c3{background:#e6f4ea}.kcol.c3 .kcol-head b{color:var(--green-dark)}
+.kcol.c4{background:#e8e8e8}.kcol.c4 .kcol-head b{color:var(--gray)}
+.kcard{background:#fff;border-radius:8px;padding:9px 10px;margin-bottom:7px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.kcard:hover{box-shadow:0 2px 6px rgba(0,0,0,.14)}
+.kcard b{font-size:13.5px;font-weight:600;display:block;line-height:1.25}
+.kcard small{font-size:11.5px;color:#888;display:block;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kcard .kbadges{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.kcard .kb{font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:8px}
+.kempty{text-align:center;color:#999;font-size:12px;padding:10px 4px}
+.btn-vue{background:var(--gray-light);border:1px solid var(--border);border-radius:6px;font-size:12.5px;font-weight:600;padding:6px 10px;white-space:nowrap}
+@media(max-width:700px){.kanban{grid-template-columns:repeat(4,78vw);overflow-x:auto;padding-bottom:6px;scroll-snap-type:x mandatory}.kcol{scroll-snap-align:start}}
 .interne{font-family:var(--font-body);font-weight:600;font-size:10.5px;color:#fff;background:var(--gray);border-radius:8px;padding:2px 8px;letter-spacing:.5px;vertical-align:2px}
 
 .prod-block{border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;background:#fafafa}
@@ -167,12 +185,15 @@ button{font-family:var(--font-body);cursor:pointer}
 
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
       <div class="sec-title" style="margin:0;flex:1">DOSSIERS EN COURS</div>
+      <button class="btn-vue" id="btn-vue" onclick="toggleVue()">☰ Vue liste</button>
       <button class="btn-sm primary" onclick="openCreate()">＋ Nouveau dossier</button>
     </div>
     <div class="panel" id="dossiers"></div>
 
-    <div class="sec-title">POSES RÉALISÉES</div>
-    <div class="panel" id="dossiers-done"></div>
+    <div id="sec-faits">
+      <div class="sec-title">POSES RÉALISÉES</div>
+      <div class="panel" id="dossiers-done"></div>
+    </div>
 
     <div id="notices-sec" class="hidden">
       <div class="sec-title">NOTICES DE POSE <span class="interne">ADMIN</span></div>
@@ -419,6 +440,9 @@ function render(){
   });
   todo.sort(function(a,b){return a.ordre-b.ordre;});
 
+  // En vue colonnes, les "dates à fixer" ont déjà leur colonne : on évite le doublon
+  var todoAff = vueColonnes ? todo.filter(function(t){return t.type !== 'date';}) : todo;
+
   // --- stats ---
   var nRel = todo.filter(function(t){return t.type==='relance';}).length;
   var nDat = todo.filter(function(t){return t.type==='date' && t.urg<=21;}).length;
@@ -431,7 +455,7 @@ function render(){
    +'<div class="stat"><p>Poses sous 7 jours</p><b>'+sem+'</b></div>';
 
   // --- liste à traiter ---
-  var h = todo.map(function(t){
+  var h = todoAff.map(function(t){
     if(t.type==='relance'){
       var lbl = t.a.type==='j30' ? 'Relance J-30' : 'Relance J-14';
       var reste = t.st.total - t.st.done;
@@ -458,14 +482,85 @@ function render(){
       +'<div class="main"><b>'+esc(t.d.client_nom)+'</b><small>« '+prev+' »</small></div>'
       +'<button class="btn-sm" onclick="event.stopPropagation();openDetail(\''+t.d.id+'\')">Répondre</button></div>';
   }).join('');
-  document.getElementById('todo').innerHTML = h || '<div class="empty">Rien à traiter — tout est à jour ✓</div>';
+  var vide = vueColonnes && nDat
+    ? '<div class="empty">Aucune relance ni message en attente — voir la colonne « Date à fixer » ci-dessous.</div>'
+    : '<div class="empty">Rien à traiter — tout est à jour ✓</div>';
+  document.getElementById('todo').innerHTML = h || vide;
 
   // --- dossiers ---
-  document.getElementById('dossiers').innerHTML = enCours.map(rowDossier).join('')
-    || '<div class="empty">Aucun dossier en cours. Créez le premier !</div>';
+  var boxD = document.getElementById('dossiers');
+  if(vueColonnes){
+    boxD.className = '';
+    boxD.innerHTML = kanbanHtml(enCours, faits);
+  } else {
+    boxD.className = 'panel';
+    boxD.innerHTML = enCours.map(rowDossier).join('')
+      || '<div class="empty">Aucun dossier en cours. Créez le premier !</div>';
+  }
+  var bv = document.getElementById('btn-vue');
+  if(bv) bv.textContent = vueColonnes ? '☰ Vue liste' : '▦ Vue colonnes';
+  document.getElementById('sec-faits').style.display = vueColonnes ? 'none' : '';
   document.getElementById('dossiers-done').innerHTML = faits.slice(0,10).map(rowDossier).join('')
     || '<div class="empty">Aucune pose réalisée pour l\'instant.</div>';
   renderNotices();
+}
+
+var vueColonnes = true;
+function toggleVue(){ vueColonnes = !vueColonnes; render(); }
+
+function etapeDossier(d){
+  var st = dossierStats(d);
+  if(d.statut === 'pose_faite') return 3;
+  if(!d.date_pose) return 0;
+  return (st.total && st.done === st.total) ? 2 : 1;
+}
+
+function kcard(d){
+  var st = dossierStats(d);
+  var pct = st.total ? Math.round(st.done/st.total*100) : 0;
+  var cls = pct===100 ? 'ok' : (pct>=50 ? 'warn' : 'danger');
+  var ico = d.client_type==='charpentier' ? '🔨' : '👤';
+  var when = d.date_pose ? fmtDate(d.date_pose) : (d.periode_texte || 'période à définir');
+  var prods = st.prods.map(function(p){return esc(p.designation);}).join(', ') || '—';
+  var badges = '<span class="kb tag '+cls+'">'+st.done+'/'+st.total+'</span>';
+  if(d.date_pose && d.statut==='en_cours'){
+    var j = joursAvant(d.date_pose);
+    if(j>=0 && j<=14) badges += '<span class="kb tag danger">J-'+j+'</span>';
+  }
+  if(!d.premiere_ouverture && d.statut==='en_cours') badges += '<span class="kb tag info">Lien non ouvert</span>';
+  if(st.unread) badges += '<span class="kb tag info">'+st.unread+' msg</span>';
+  return '<div class="kcard" onclick="openDetail(\''+d.id+'\')">'
+    +'<b>'+ico+' '+esc(d.client_nom)+'</b>'
+    +'<small>'+prods+'</small>'
+    +'<small>📅 '+when+'</small>'
+    +'<div class="kbadges">'+badges+'</div></div>';
+}
+
+function kanbanHtml(enCours, faits){
+  var cols = [
+    {t:'Date à fixer', c:'c1', items:[]},
+    {t:'Préparation', c:'c2', items:[]},
+    {t:'Prêt à poser', c:'c3', items:[]},
+    {t:'Posé', c:'c4', items:[]}
+  ];
+  enCours.forEach(function(d){ cols[etapeDossier(d)].items.push(d); });
+  faits.slice(0,15).forEach(function(d){ cols[3].items.push(d); });
+
+  // les plus urgents en haut de chaque colonne
+  cols.forEach(function(c){
+    c.items.sort(function(a,b){
+      if(a.date_pose && b.date_pose) return a.date_pose < b.date_pose ? -1 : 1;
+      if(a.date_pose) return -1;
+      if(b.date_pose) return 1;
+      return (a.periode_debut||'9999') < (b.periode_debut||'9999') ? -1 : 1;
+    });
+  });
+
+  return '<div class="kanban">' + cols.map(function(c){
+    return '<div class="kcol '+c.c+'"><div class="kcol-head"><b>'+c.t+'</b><span>'+c.items.length+'</span></div>'
+      + (c.items.length ? c.items.map(kcard).join('') : '<div class="kempty">—</div>')
+      + '</div>';
+  }).join('') + '</div>';
 }
 
 function rowDossier(d){
