@@ -1879,16 +1879,22 @@ function suiviTaches(famille){
 }
 
 // Envoie une image (dataURL) dans les photos internes du dossier
-async function suiviUploadPhoto(dataURL, legende){
-  var blob = suiviDataURLBlob(dataURL);
-  var a = new Uint8Array(16); crypto.getRandomValues(a);
-  var ext = blob.type === 'image/png' ? '.png' : '.jpg';
-  var chemin = Array.prototype.map.call(a,function(b){return ('0'+b.toString(16)).slice(-2);}).join('') + ext;
-  var up = await sbSuivi.storage.from('pieces-jointes').upload(chemin, blob, {contentType: blob.type});
-  if(up.error) return false;
-  var url = sbSuivi.storage.from('pieces-jointes').getPublicUrl(chemin).data.publicUrl;
-  var r = await sbSuivi.rpc('ajouter_photo_chantier', {p_dossier: suiviDossier.id, p_url: url, p_legende: legende || null});
-  return !(r.error);
+async function suiviUploadPhoto(dataURL, legende, visibleClient){
+  try{
+    var blob = suiviDataURLBlob(dataURL);
+    var a = new Uint8Array(16); crypto.getRandomValues(a);
+    var ext = blob.type === 'image/png' ? '.png' : '.jpg';
+    var chemin = Array.prototype.map.call(a,function(b){return ('0'+b.toString(16)).slice(-2);}).join('') + ext;
+    var up = await sbSuivi.storage.from('pieces-jointes').upload(chemin, blob, {contentType: blob.type});
+    if(up.error){ console.error('Photo - envoi fichier:', up.error); return false; }
+    var url = sbSuivi.storage.from('pieces-jointes').getPublicUrl(chemin).data.publicUrl;
+    var r = await sbSuivi.rpc('ajouter_photo_chantier', {
+      p_dossier: suiviDossier.id, p_url: url,
+      p_legende: legende || null, p_visible: !!visibleClient
+    });
+    if(r.error){ console.error('Photo - enregistrement:', r.error); return false; }
+    return true;
+  }catch(e){ console.error('Photo - exception:', e); return false; }
 }
 
 function suiviDataURLBlob(dataURL){
@@ -1966,13 +1972,14 @@ async function creerDossierSuivi(){
   var okPh = 0, koPh = 0;
   try{
     var ph = getSketchData();
-    if(ph){ (await suiviUploadPhoto(ph, 'Croquis annote (visite)')) ? okPh++ : koPh++; }
+    if(ph){ (await suiviUploadPhoto(ph, 'Preparation annotee par votre commercial', true)) ? okPh++ : koPh++; }
     if(typeof photosList !== 'undefined' && photosList && photosList.length){
       for(var ip = 0; ip < photosList.length; ip++){
-        (await suiviUploadPhoto(photosList[ip], 'Photo chantier ' + (ip+1))) ? okPh++ : koPh++;
+        (await suiviUploadPhoto(photosList[ip], 'Photo chantier ' + (ip+1), false)) ? okPh++ : koPh++;
       }
     }
-    if(koPh) showToast(koPh + ' photo(s) non transferee(s)');
+    if(koPh) showToast(koPh + ' photo(s) non transferee(s) - voir console F12');
+    else if(okPh) showToast(okPh + ' photo(s) transferee(s)');
   }catch(e){ showToast('Photos non transferees'); }
 
   if(etat){ etat.style.background = '#edf9f1'; etat.style.color = '#1d7a44';
