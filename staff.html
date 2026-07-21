@@ -626,7 +626,10 @@ function renderDetail(id){
     +'<div class="photos-grid">'
     +photos.map(function(ph){
       return '<div class="ph"><img src="'+esc(ph.url)+'" alt="" onclick="window.open(this.src)">'
-        +'<button class="del" onclick="delPhoto(\''+ph.id+'\')">✕</button></div>';
+        +'<button class="del" onclick="delPhoto(\''+ph.id+'\')">✕</button>'
+        +'<button class="del" style="left:4px;right:auto;background:'+(ph.visible_client?'rgba(39,174,96,.85)':'rgba(0,0,0,.55)')+'"'
+        +' title="Visible par le client" onclick="event.stopPropagation();toggleVisible(\''+ph.id+'\','+(!ph.visible_client)+')">'
+        +(ph.visible_client?'👁 client':'🔒 interne')+'</button></div>';
     }).join('')
     +'</div>'
     +'<div style="margin-top:10px"><button class="btn-sm" onclick="document.getElementById(\'ph-file\').click()">📷 Ajouter une photo du chantier</button>'
@@ -833,6 +836,14 @@ async function addPhoto(inp, did){
     toast('Photo ajoutée ✓');
   }catch(e){ toast('Photo trop lourde ou non prise en charge'); }
 }
+async function toggleVisible(pid, val){
+  var r = await sb.from('chantier_photos').update({visible_client:val}).eq('id',pid);
+  if(r.error){ toast('Erreur'); return; }
+  var p = D.photos.find(function(x){return x.id===pid;}); if(p) p.visible_client = val;
+  renderDetail(currentDossier);
+  toast(val ? 'Photo visible par le client' : 'Photo interne');
+}
+
 async function delPhoto(pid){
   if(!confirm('Supprimer cette photo ?')) return;
   var r = await sb.from('chantier_photos').delete().eq('id',pid);
