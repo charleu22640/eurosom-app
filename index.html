@@ -25,6 +25,9 @@ body{font-family:var(--font-body);font-size:15px;background:#ebebeb;color:var(--
 .header-right{margin-left:auto;display:flex;gap:8px;align-items:center}
 .btn-hist{background:rgba(255,255,255,0.15);border:none;color:#fff;font-family:var(--font-head);font-size:13px;font-weight:600;letter-spacing:1px;padding:6px 12px;border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:5px}
 .btn-hist:active{background:rgba(255,255,255,0.25)}
+.btn-suivi{background:rgba(255,255,255,0.28)}
+.btn-suivi:active{background:rgba(255,255,255,0.42)}
+@media(max-width:520px){.btn-suivi-txt{display:none}}
 .hist-count{background:var(--red-light);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:700}
 
 /* MENU PRODUITS */
@@ -213,6 +216,7 @@ body{font-family:var(--font-body);font-size:15px;background:#ebebeb;color:var(--
     <div class="header-inner">
       <div class="header-logo">EUROSOM<span>Prise de mesures</span></div>
       <div class="header-right">
+        <button class="btn-hist btn-suivi" onclick="window.location.href='staff.html'" title="Suivi des chantiers">&#128202; <span class="btn-suivi-txt">SUIVI CHANTIERS</span></button>
         <button class="btn-hist" onclick="showHistory()">&#128337; <span id="hist-badge" class="hist-count">0</span></button>
       </div>
     </div>
@@ -260,14 +264,6 @@ body{font-family:var(--font-body);font-size:15px;background:#ebebeb;color:var(--
         <div class="prod-card-arrow">›</div>
       </div>
 
-      <div class="prod-card" onclick="window.location.href='staff.html'" style="border:2px solid #96281b;margin-top:14px">
-        <div class="prod-card-accent" style="background:#96281b"></div>
-        <div class="prod-card-body">
-          <div class="prod-card-name" style="color:#96281b">&#128202; SUIVI DES CHANTIERS</div>
-          <div class="prod-card-desc">Dossiers clients, préparations, messagerie, relances</div>
-        </div>
-        <div class="prod-card-arrow" style="color:#96281b">›</div>
-      </div>
     </div>
   </div>
 
