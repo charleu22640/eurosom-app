@@ -1260,6 +1260,14 @@ function sendMailFromDetail(){
 // =========================================================
 // SAUVEGARDE / HISTORIQUE
 // =========================================================
+// Met a jour la pastille du compteur d'historique
+function updateBadge(){
+  var b = document.getElementById('hist-badge');
+  if(!b) return;
+  b.textContent = histData.length;
+  b.style.display = histData.length ? '' : 'none';
+}
+
 function saveForm(){
   var d=collectForm();
   if(!d.affaire&&!d.client){showToast('Renseignez le n° affaire ou le client');return;}
