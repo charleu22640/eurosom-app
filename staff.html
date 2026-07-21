@@ -731,8 +731,8 @@ async function addPhoto(inp, did){
     var p = await preparerFichier(f);
     var url = await uploadPj(p);
     if(!url){ toast('Envoi impossible'); return; }
-    var r = await sb.from('chantier_photos').insert({dossier_id:did, url:url, profil_id:me.id}).select().single();
-    if(r.error){ toast('Erreur d\'enregistrement'); return; }
+    var r = await sb.rpc('ajouter_photo_chantier', {p_dossier:did, p_url:url, p_legende:null});
+    if(r.error || !r.data){ toast('Erreur d\'enregistrement'); return; }
     D.photos.push(r.data);
     renderDetail(currentDossier);
     toast('Photo ajoutée ✓');
@@ -878,40 +878,47 @@ async function createDossier(){
   var dossier = {
     client_nom: nom,
     client_type: type,
-    client_tel: document.getElementById('c-tel').value.trim() || null,
-    client_email: document.getElementById('c-email').value.trim() || null,
+    client_tel: document.getElementById('c-tel').value.trim() || '',
+    client_email: document.getElementById('c-email').value.trim() || '',
     canal: type==='charpentier' ? 'email' : 'sms',
-    site_adresse: document.getElementById('c-site').value.trim() || null,
-    notes_internes: document.getElementById('c-notes').value.trim() || null,
-    periode_texte: document.getElementById('c-periode').value.trim() || null,
-    periode_debut: document.getElementById('c-periode-date').value || null,
-    date_pose: document.getElementById('c-date').value || null,
+    site_adresse: document.getElementById('c-site').value.trim() || '',
+    notes_internes: document.getElementById('c-notes').value.trim() || '',
+    periode_texte: document.getElementById('c-periode').value.trim() || '',
+    periode_debut: document.getElementById('c-periode-date').value || '',
+    date_pose: document.getElementById('c-date').value || '',
     commercial_id: me.role==='admin' ? document.getElementById('c-commercial').value : me.id
   };
-  var rd = await sb.from('dossiers').insert(dossier).select().single();
-  if(rd.error){ btn.disabled=false; btn.textContent='CRÉER LE DOSSIER'; toast('Erreur : '+rd.error.message); return; }
-  var d = rd.data;
-
-  // produits + tâches
+  // Produits + tâches, préparés pour la fonction sécurisée
+  var listeProduits = [];
   for(var i=0;i<prodRows;i++){
     var row = document.getElementById('prod-row-'+i); if(!row) continue;
     var fam = document.getElementById('p-fam-'+i).value;
     var des = document.getElementById('p-des-'+i).value.trim() || FAMILLES[fam];
-    var loc = document.getElementById('p-loc-'+i).value.trim() || null;
-    var tech = document.getElementById('p-tech-'+i).value.trim() || null;
-    var rp = await sb.from('produits').insert({dossier_id:d.id, famille:fam, designation:des, localisation:loc, infos_technique:tech, ordre:i}).select().single();
-    if(rp.error){ toast('Erreur produit'); continue; }
-    var taches = [], ordre = 0;
+    var taches = [];
     (PREP_TASKS[fam]||[]).forEach(function(cat){
       cat.tasks.forEach(function(t){
-        taches.push({produit_id:rp.data.id, dossier_id:d.id, categorie:cat.cat, label:t.label, descr:t.desc||null, is_custom:false, ordre:ordre++});
+        taches.push({categorie:cat.cat, label:t.label, descr:t.desc||'', is_custom:false});
       });
     });
     document.getElementById('p-notes-'+i).value.split('\n').forEach(function(line){
-      if(line.trim()) taches.push({produit_id:rp.data.id, dossier_id:d.id, categorie:'Spécifique', label:line.trim(), is_custom:true, ordre:ordre++});
+      if(line.trim()) taches.push({categorie:'Spécifique', label:line.trim(), is_custom:true});
     });
-    if(taches.length){ var rt = await sb.from('taches').insert(taches); if(rt.error) toast('Erreur tâches'); }
+    listeProduits.push({
+      famille: fam,
+      designation: des,
+      localisation: document.getElementById('p-loc-'+i).value.trim() || '',
+      infos_technique: document.getElementById('p-tech-'+i).value.trim() || '',
+      taches: taches
+    });
   }
+
+  var rd = await sb.rpc('creer_dossier', {p_dossier: dossier, p_produits: listeProduits});
+  if(rd.error || !rd.data){
+    btn.disabled=false; btn.textContent='CRÉER LE DOSSIER';
+    toast('Erreur : ' + ((rd.error && rd.error.message) || 'création impossible'));
+    return;
+  }
+  var d = rd.data;
 
   createdDossier = d;
   D.dossiers.unshift(d);
