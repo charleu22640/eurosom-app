@@ -772,7 +772,7 @@ function prepClientBlock(){
     +'</div>'
     +'<button type="button" onclick="suiviLogin()" style="background:#4a4a4a;color:#fff;border:none;border-radius:8px;padding:10px 16px;font-weight:700;cursor:pointer">SE CONNECTER</button>'
     +'</div>'
-    +'<button type="button" id="suivi-btn" onclick="creerDossierSuivi()" style="width:100%;background:#96281b;color:#fff;border:none;border-radius:8px;padding:12px;font-weight:700;font-size:14px;letter-spacing:1px;cursor:pointer;margin-top:4px">CR&Eacute;ER LE DOSSIER DE SUIVI</button>'
+    +'<div id="suivi-etat" style="font-size:12.5px;color:#8a5a1e;background:#fdf3e7;border-radius:8px;padding:9px 11px;margin-top:4px">&#8505;&#65039; Le dossier de suivi vous sera propos&eacute; au moment de la sauvegarde de la feuille.</div>'
     +'<div id="suivi-result" style="display:none;margin-top:10px">'
     +'<label style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Lien de suivi du client</label>'
     +'<div style="display:flex;gap:6px;margin-top:4px">'
@@ -1267,6 +1267,15 @@ function saveForm(){
   localStorage.setItem('eurosom_history',JSON.stringify(histData));
   updateBadge();
   showToast('✓ Feuille sauvegardée');
+  // Proposer la création du dossier de suivi client (une seule fois par feuille)
+  if(typeof creerDossierSuivi === 'function' && !window.suiviDossier){
+    if(!d.client){ return; }
+    setTimeout(function(){
+      if(confirm('Feuille sauvegardée.\n\nCréer aussi le dossier de suivi client pour ' + d.client + ' ?\n(lien SMS/email, préparation en ligne, messagerie et relances)')){
+        creerDossierSuivi();
+      }
+    }, 350);
+  }
 }
 
 function resetForm(){
@@ -1275,6 +1284,7 @@ function resetForm(){
   document.querySelectorAll('#form-content input[type=radio],#form-content input[type=checkbox]').forEach(function(e){e.checked=false;});
   prepChecked = {};
   prepCustomTasks = [];
+  window.suiviDossier = null;
   photoBase = null;
   removePhoto();
   renderPrepAccordion(currentProduit);
@@ -1861,8 +1871,8 @@ async function creerDossierSuivi(){
   var prep = d.prep || {};
   if(!d.client){ showToast('Renseignez le nom du client (en haut de la feuille)'); return; }
 
-  var btn = document.getElementById('suivi-btn');
-  btn.disabled = true; btn.textContent = 'CREATION EN COURS\u2026';
+  var etat = document.getElementById('suivi-etat');
+  if(etat){ etat.innerHTML = '\u23f3 Cr\u00e9ation du dossier en cours\u2026'; }
 
   var type = gv('suivi-type') || 'particulier';
   var notes = [];
@@ -1883,7 +1893,9 @@ async function creerDossierSuivi(){
   }).select().single();
 
   if(rd.error){
-    btn.disabled = false; btn.textContent = 'CREER LE DOSSIER DE SUIVI';
+    if(etat){ etat.innerHTML = '\u26a0\ufe0f Cr\u00e9ation impossible \u2014 res-sauvegardez pour r\u00e9essayer.'; }
+    var e2 = document.getElementById('suivi-etat');
+    if(e2){ e2.innerHTML = '\u26a0\ufe0f La creation a echoue. Enregistrez de nouveau la feuille pour reessayer.'; }
     showToast('Erreur : ' + rd.error.message);
     return;
   }
@@ -1920,7 +1932,14 @@ async function creerDossierSuivi(){
     }
   }catch(e){ /* photo facultative */ }
 
-  btn.style.display = 'none';
+  if(etat){ etat.style.background = '#edf9f1'; etat.style.color = '#1d7a44';
+    etat.innerHTML = '\u2705 Dossier de suivi cr\u00e9\u00e9 \u2014 envoyez le lien ci-dessous au client.'; }
+  var etat = document.getElementById('suivi-etat');
+  if(etat) etat.style.display = 'none';
+  if(histData.length){
+    histData[0].suivi_token = suiviDossier.token;
+    localStorage.setItem('eurosom_history', JSON.stringify(histData));
+  }
   document.getElementById('suivi-link').value = SUIVI_URL + '?t=' + suiviDossier.token;
   document.getElementById('suivi-result').style.display = 'block';
   showToast('\u2713 Dossier de suivi cree');
