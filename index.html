@@ -1268,14 +1268,35 @@ function saveForm(){
   updateBadge();
   showToast('✓ Feuille sauvegardée');
   // Proposer la création du dossier de suivi client (une seule fois par feuille)
-  if(typeof creerDossierSuivi === 'function' && !window.suiviDossier){
-    if(!d.client){ return; }
-    setTimeout(function(){
-      if(confirm('Feuille sauvegardée.\n\nCréer aussi le dossier de suivi client pour ' + d.client + ' ?\n(lien SMS/email, préparation en ligne, messagerie et relances)')){
-        creerDossierSuivi();
-      }
-    }, 350);
+  if(typeof creerDossierSuivi === 'function' && !window.suiviDossier && d.client){
+    proposerSuivi(d.client);
   }
+}
+
+// Encadré de proposition affiche directement dans la page (plus fiable qu'une fenetre systeme)
+function proposerSuivi(client){
+  var etat = document.getElementById('suivi-etat');
+  if(!etat) return;
+  etat.style.background = '#fdf3e7';
+  etat.style.border = '2px solid #e67e22';
+  etat.style.color = '#633806';
+  etat.innerHTML =
+    '<div style="font-weight:700;font-size:13px;margin-bottom:4px">&#10004; Feuille sauvegard&eacute;e</div>'
+    + '<div style="font-size:12.5px;margin-bottom:8px">Cr&eacute;er aussi le dossier de suivi client pour <b>' + client + '</b> ?<br>'
+    + '<span style="color:#8a6a3e">Lien SMS/email, pr&eacute;paration en ligne, messagerie et relances.</span></div>'
+    + '<div style="display:flex;gap:8px">'
+    + '<button type="button" onclick="creerDossierSuivi()" style="flex:1;background:#96281b;color:#fff;border:none;border-radius:8px;padding:11px;font-weight:700;font-size:13px;letter-spacing:.5px;cursor:pointer">OUI, CR&Eacute;ER LE DOSSIER</button>'
+    + '<button type="button" onclick="refuserSuivi()" style="background:#f2f2f2;border:1px solid #ddd;border-radius:8px;padding:11px 14px;font-weight:600;font-size:13px;cursor:pointer">Plus tard</button>'
+    + '</div>';
+  try{ etat.scrollIntoView({behavior:'smooth', block:'center'}); }catch(e){ etat.scrollIntoView(); }
+}
+
+function refuserSuivi(){
+  var etat = document.getElementById('suivi-etat');
+  if(!etat) return;
+  etat.style.background = '#fdf3e7';
+  etat.style.border = 'none';
+  etat.innerHTML = '&#8505;&#65039; Le dossier de suivi vous sera propos&eacute; au prochain enregistrement de la feuille.';
 }
 
 function resetForm(){
