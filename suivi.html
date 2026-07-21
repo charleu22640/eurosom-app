@@ -127,6 +127,7 @@ body{font-family:var(--font-body);font-size:15px;background:#ebebeb;color:var(--
     <div id="main" class="hidden">
       <p class="hello">Bonjour <b id="c-nom"></b>, voici l'avancement de la préparation de votre chantier.</p>
       <div id="banner"></div>
+      <div id="photos-client"></div>
       <div id="produits"></div>
       <div id="docs"></div>
 
@@ -178,6 +179,7 @@ async function load(){
 
     document.getElementById('c-nom').textContent = d.dossier.client_nom;
     renderBanner(d.dossier);
+    renderPhotos(d.photos || []);
     renderProduits();
     renderDocs(d.notices || []);
     renderMsgs(true);
@@ -231,6 +233,20 @@ function renderProduits(){
       + rows + '</div>';
   }).join('');
   document.getElementById('produits').innerHTML = html;
+}
+
+function renderPhotos(photos){
+  var el = document.getElementById('photos-client');
+  if(!photos.length){ el.innerHTML = ''; return; }
+  var imgs = photos.map(function(p){
+    return '<div style="padding:10px 12px;border-top:1px solid #f0f0f0">'
+      + '<img src="' + esc(p.url) + '" alt="" style="width:100%;border-radius:8px;display:block;cursor:pointer" onclick="window.open(this.src)">'
+      + (p.legende ? '<p style="font-size:12.5px;color:#888;margin-top:5px">' + esc(p.legende) + '</p>' : '')
+      + '</div>';
+  }).join('');
+  el.innerHTML = '<div class="prod">'
+    + '<div class="prod-head"><h3>PHOTOS DE VOTRE CHANTIER<small>Repères transmis par votre commercial</small></h3></div>'
+    + imgs + '</div>';
 }
 
 function renderDocs(notices){
