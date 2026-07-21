@@ -1909,44 +1909,40 @@ async function creerDossierSuivi(){
   if(d.metreur) notes.push('Metreur : ' + d.metreur);
   if(prep.remarques) notes.push(prep.remarques);
 
-  var rd = await sbSuivi.from('dossiers').insert({
-    client_nom: d.client,
-    client_type: type,
-    client_tel: prep.tel || null,
-    client_email: prep.email || null,
-    canal: type === 'charpentier' ? 'email' : 'sms',
-    periode_texte: gv('suivi-periode') || prep.date_pose || null,
-    periode_debut: gv('suivi-periode-date') || null,
-    notes_internes: notes.join('\n') || null,
-    commercial_id: s.data.session.user.id
-  }).select().single();
+  var taches = suiviTaches(currentProduit);
+  prepCustomTasks.forEach(function(t){
+    taches.push({categorie:'Specifique', label:t, descr:null, is_custom:true});
+  });
 
-  if(rd.error){
-    if(etat){ etat.innerHTML = '\u26a0\ufe0f Cr\u00e9ation impossible \u2014 res-sauvegardez pour r\u00e9essayer.'; }
+  var rd = await sbSuivi.rpc('creer_dossier', {
+    p_dossier: {
+      client_nom: d.client,
+      client_type: type,
+      client_tel: prep.tel || '',
+      client_email: prep.email || '',
+      canal: type === 'charpentier' ? 'email' : 'sms',
+      periode_texte: gv('suivi-periode') || prep.date_pose || '',
+      periode_debut: gv('suivi-periode-date') || '',
+      notes_internes: notes.join('\n')
+    },
+    p_produits: [{
+      famille: currentProduit,
+      designation: SUIVI_LABELS[currentProduit] || currentProduit,
+      infos_technique: suiviMesuresResume(d) || '',
+      taches: taches
+    }]
+  });
+
+  if(rd.error || !rd.data){
+    if(btn){ btn.disabled = false; btn.textContent = 'CREER LE DOSSIER DE SUIVI'; }
     var e2 = document.getElementById('suivi-etat');
     if(e2){ e2.innerHTML = '\u26a0\ufe0f La creation a echoue. Enregistrez de nouveau la feuille pour reessayer.'; }
-    showToast('Erreur : ' + rd.error.message);
+    showToast('Erreur : ' + ((rd.error && rd.error.message) || 'creation impossible'));
     return;
   }
   suiviDossier = rd.data;
 
-  var rp = await sbSuivi.from('produits').insert({
-    dossier_id: suiviDossier.id,
-    famille: currentProduit,
-    designation: SUIVI_LABELS[currentProduit] || currentProduit,
-    infos_technique: suiviMesuresResume(d),
-    ordre: 0
-  }).select().single();
-
-  if(!rp.error){
-    var taches = suiviTaches(currentProduit);
-    prepCustomTasks.forEach(function(t){
-      taches.push({categorie:'Specifique', label:t, descr:null, is_custom:true, ordre:taches.length});
-    });
-    taches.forEach(function(t){ t.produit_id = rp.data.id; t.dossier_id = suiviDossier.id; });
-    if(taches.length) await sbSuivi.from('taches').insert(taches);
-  }
-
+  // Photo annotee de la visite -> photos internes du dossier
   try{
     var ph = getSketchData();
     if(ph){
@@ -1956,7 +1952,7 @@ async function creerDossierSuivi(){
       var up = await sbSuivi.storage.from('pieces-jointes').upload(chemin, blob, {contentType: blob.type});
       if(!up.error){
         var url = sbSuivi.storage.from('pieces-jointes').getPublicUrl(chemin).data.publicUrl;
-        await sbSuivi.from('chantier_photos').insert({dossier_id: suiviDossier.id, url: url, legende: 'Photo de visite (annotee)', profil_id: s.data.session.user.id});
+        await sbSuivi.rpc('ajouter_photo_chantier', {p_dossier: suiviDossier.id, p_url: url, p_legende: 'Photo de visite (annotee)'});
       }
     }
   }catch(e){ /* photo facultative */ }
