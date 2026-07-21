@@ -1843,12 +1843,20 @@ function suiviDataURLBlob(dataURL){
 }
 
 async function creerDossierSuivi(){
+  // Vérifie que la session est valide cote serveur (et la renouvelle si besoin)
   var s = await sbSuivi.auth.getSession();
-  if(!s.data.session){
+  var uid = null;
+  if(s.data.session){
+    var u = await sbSuivi.auth.getUser();
+    if(!u.error && u.data && u.data.user) uid = u.data.user.id;
+  }
+  if(!uid){
+    try{ await sbSuivi.auth.signOut(); }catch(e){}
     document.getElementById('suivi-login').style.display = 'block';
-    showToast('Connectez-vous avec votre compte Eurosom');
+    showToast('Session expiree : reconnectez-vous');
     return;
   }
+  var s = {data:{session:{user:{id:uid}}}};
   var d = collectForm();
   var prep = d.prep || {};
   if(!d.client){ showToast('Renseignez le nom du client (en haut de la feuille)'); return; }
