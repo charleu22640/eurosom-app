@@ -1860,18 +1860,35 @@ function suiviMesuresResume(d){
 }
 
 function suiviTaches(famille){
-  var out = [], src = PREP_TASKS[famille] || [], ordre = 0;
-  src.forEach(function(e){
-    if(e && e.tasks){
-      var cat = (e.cat || '').replace(/^[^A-Za-z\u00C0-\u024F]+\s*/, '');
-      e.tasks.forEach(function(t){
-        out.push({categorie: cat || null, label: t.label, descr: t.desc || null, is_custom: false, ordre: ordre++});
-      });
-    } else if(e && e.label){
-      out.push({categorie: null, label: e.label, descr: e.desc || null, is_custom: false, ordre: ordre++});
-    }
+  // On ne transmet au client QUE les consignes cochees dans la preparation
+  var out = [], cats = PREP_TASKS[famille] || [];
+  cats.forEach(function(cat, ci){
+    var nom = (cat.cat || '').replace(/^[^A-Za-z\u00C0-\u024F]+\s*/, '').trim();
+    (cat.tasks || []).forEach(function(t){
+      if(prepChecked[ci + '_' + t.id]){
+        out.push({categorie: nom || null, label: t.label, descr: t.desc || null, is_custom: false});
+      }
+    });
+  });
+  prepCustomTasks.forEach(function(t){
+    var lbl = (typeof t === 'string') ? t : (t && t.label);
+    var coche = (typeof t === 'string') ? true : !!(t && t.checked);
+    if(lbl && coche) out.push({categorie: 'Specifique', label: lbl, descr: null, is_custom: true});
   });
   return out;
+}
+
+// Envoie une image (dataURL) dans les photos internes du dossier
+async function suiviUploadPhoto(dataURL, legende){
+  var blob = suiviDataURLBlob(dataURL);
+  var a = new Uint8Array(16); crypto.getRandomValues(a);
+  var ext = blob.type === 'image/png' ? '.png' : '.jpg';
+  var chemin = Array.prototype.map.call(a,function(b){return ('0'+b.toString(16)).slice(-2);}).join('') + ext;
+  var up = await sbSuivi.storage.from('pieces-jointes').upload(chemin, blob, {contentType: blob.type});
+  if(up.error) return false;
+  var url = sbSuivi.storage.from('pieces-jointes').getPublicUrl(chemin).data.publicUrl;
+  var r = await sbSuivi.rpc('ajouter_photo_chantier', {p_dossier: suiviDossier.id, p_url: url, p_legende: legende || null});
+  return !(r.error);
 }
 
 function suiviDataURLBlob(dataURL){
@@ -1910,9 +1927,12 @@ async function creerDossierSuivi(){
   if(prep.remarques) notes.push(prep.remarques);
 
   var taches = suiviTaches(currentProduit);
-  prepCustomTasks.forEach(function(t){
-    taches.push({categorie:'Specifique', label:t, descr:null, is_custom:true});
-  });
+  if(!taches.length){
+    if(btn){ btn.disabled = false; btn.textContent = 'CREER LE DOSSIER DE SUIVI'; }
+    if(hint || etat){ }
+    showToast('Cochez au moins une consigne de preparation');
+    return;
+  }
 
   var rd = await sbSuivi.rpc('creer_dossier', {
     p_dossier: {
@@ -1942,20 +1962,18 @@ async function creerDossierSuivi(){
   }
   suiviDossier = rd.data;
 
-  // Photo annotee de la visite -> photos internes du dossier
+  // Croquis annote + photos du chantier -> photos internes du dossier
+  var okPh = 0, koPh = 0;
   try{
     var ph = getSketchData();
-    if(ph){
-      var blob = suiviDataURLBlob(ph);
-      var a = new Uint8Array(16); crypto.getRandomValues(a);
-      var chemin = Array.prototype.map.call(a,function(b){return ('0'+b.toString(16)).slice(-2);}).join('') + '.jpg';
-      var up = await sbSuivi.storage.from('pieces-jointes').upload(chemin, blob, {contentType: blob.type});
-      if(!up.error){
-        var url = sbSuivi.storage.from('pieces-jointes').getPublicUrl(chemin).data.publicUrl;
-        await sbSuivi.rpc('ajouter_photo_chantier', {p_dossier: suiviDossier.id, p_url: url, p_legende: 'Photo de visite (annotee)'});
+    if(ph){ (await suiviUploadPhoto(ph, 'Croquis annote (visite)')) ? okPh++ : koPh++; }
+    if(typeof photosList !== 'undefined' && photosList && photosList.length){
+      for(var ip = 0; ip < photosList.length; ip++){
+        (await suiviUploadPhoto(photosList[ip], 'Photo chantier ' + (ip+1))) ? okPh++ : koPh++;
       }
     }
-  }catch(e){ /* photo facultative */ }
+    if(koPh) showToast(koPh + ' photo(s) non transferee(s)');
+  }catch(e){ showToast('Photos non transferees'); }
 
   if(etat){ etat.style.background = '#edf9f1'; etat.style.color = '#1d7a44';
     etat.innerHTML = '\u2705 Dossier de suivi cr\u00e9\u00e9 \u2014 envoyez le lien ci-dessous au client.'; }
