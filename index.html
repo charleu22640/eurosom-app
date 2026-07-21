@@ -1382,6 +1382,7 @@ function loadToForm(){
     closeDetail();
     photosList = d.photos ? d.photos.slice() : [];
     renderPhotos();
+    restaurerPrep(d);
     showToast('Feuille chargée');
   },200);
 }
@@ -1572,6 +1573,32 @@ var prepCustomTasks = [];
 // Photo annotable
 var photoBase = null; // image originale base64
 var sketchState = {tool:'pen', color:'#e74c3c', size:3, drawing:false, lastX:0, lastY:0};
+
+// Restaure la preparation (cases cochees, contacts, remarques) au chargement d'une feuille
+function restaurerPrep(d){
+  var prep = d && d.prep;
+  if(!prep) return;
+  var cats = PREP_TASKS[d.produit_code || currentProduit] || [];
+  var labels = {};
+  (prep.tasks || []).forEach(function(t){ if(t && t.label) labels[t.label] = true; });
+
+  prepChecked = {};
+  prepCustomTasks = [];
+  cats.forEach(function(cat, ci){
+    (cat.tasks || []).forEach(function(t){
+      if(labels[t.label]){ prepChecked[ci + '_' + t.id] = true; delete labels[t.label]; }
+    });
+  });
+  // ce qui reste sont les taches personnalisees
+  Object.keys(labels).forEach(function(l){
+    prepCustomTasks.push({id:'c'+Date.now()+Math.random().toString(16).slice(2,6), label:l, checked:true});
+  });
+
+  try{ renderPrepAccordion(d.produit_code || currentProduit); }catch(e){}
+  try{ if(typeof renderCustomTasks === 'function') renderCustomTasks(); }catch(e){}
+  var st = function(id, v){ var el = document.getElementById(id); if(el && v) el.value = v; };
+  st('prep-tel', prep.tel); st('prep-email', prep.email); st('prep-remarques', prep.remarques);
+}
 
 function initPrepTasks(code){
   prepChecked = {};
@@ -1936,7 +1963,7 @@ async function creerDossierSuivi(){
   if(!taches.length){
     if(btn){ btn.disabled = false; btn.textContent = 'CREER LE DOSSIER DE SUIVI'; }
     if(hint || etat){ }
-    showToast('Cochez au moins une consigne de preparation');
+    showToast('Aucune consigne cochee : ouvrez Preparation client et cochez les points a demander');
     return;
   }
 
